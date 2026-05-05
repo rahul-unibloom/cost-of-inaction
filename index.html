@@ -1,0 +1,1520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Risk of Inaction · Unibloom</title>
+<meta name="description" content="See what carbon pricing does to your margins by 2040. A 60-second model from Unibloom." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-2: #fafaf9;
+    --surface: #ffffff;
+    --line: #ececec;
+    --line-2: #f4f4f3;
+    --line-3: #f7f7f6;
+    --ink: #1a1a1a;
+    --ink-2: #525252;
+    --ink-3: #8a8a8a;
+    --green: #16a34a;
+    --green-soft: #f0fdf4;
+    --green-border: #dcfce7;
+    --warn: #dc2626;
+    --warn-soft: #fef2f2;
+    --warn-border: #fee2e2;
+    --neutral-bar: #d4d4d4;
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg-2);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.005em;
+    overflow-x: hidden;
+  }
+
+  /* Stage */
+  main { padding: 0 24px; }
+  .stage {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 56px 0 80px;
+    display: none;
+  }
+  /* Combined intro+inputs screen needs more horizontal room */
+  #s1.stage { max-width: 1100px; }
+  .stage.active { display: block; }
+  .stage.active > * {
+    animation: fadeUp .5s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .stage.active > *:nth-child(1) { animation-delay: 0s; }
+  .stage.active > *:nth-child(2) { animation-delay: .04s; }
+  .stage.active > *:nth-child(3) { animation-delay: .08s; }
+  .stage.active > *:nth-child(4) { animation-delay: .12s; }
+  .stage.active > *:nth-child(5) { animation-delay: .16s; }
+  .stage.active > *:nth-child(6) { animation-delay: .2s; }
+  .stage.active > *:nth-child(7) { animation-delay: .24s; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Common */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--green-soft);
+    color: var(--green);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  .badge.neutral {
+    background: var(--line-2);
+    color: var(--ink-2);
+  }
+  .badge.neutral .dot { background: var(--ink-3); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    border-radius: 10px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 0;
+    text-decoration: none;
+    transition: all .12s ease;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #000; transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--bg-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .btn-secondary:hover { background: var(--line-2); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-2);
+  }
+  .btn-ghost:hover { color: var(--ink); }
+
+  /* ─── Screen 1: Intro + Inputs (combined) ─── */
+  .intro {
+    max-width: 720px;
+    margin: 0 auto 40px;
+    text-align: center;
+  }
+  .intro h1 {
+    font-size: clamp(32px, 4.6vw, 46px);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin: 14px 0 14px;
+  }
+  .intro h1 .accent { color: var(--green); }
+  .lede {
+    font-size: 16px;
+    color: var(--ink-2);
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.55;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .split-left, .split-right { min-width: 0; }
+
+  .preview {
+    padding: 24px 24px 18px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line);
+    position: relative;
+  }
+  .preview-tag {
+    position: absolute;
+    top: 16px; right: 20px;
+    font-size: 11px;
+    color: var(--ink-3);
+    font-weight: 500;
+    background: var(--bg-2);
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+  }
+  .preview h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+    padding-right: 130px;
+  }
+  .preview p {
+    color: var(--ink-3);
+    font-size: 13px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .form-card {
+    padding: 24px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line);
+  }
+  .form-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 18px;
+    letter-spacing: -0.01em;
+  }
+  .btn-full {
+    width: 100%;
+    justify-content: center;
+    padding: 13px 18px;
+    margin-top: 4px;
+  }
+
+  /* ─── Form (used inside the form-card) ─── */
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .field label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .field .hint {
+    font-size: 12px;
+    color: var(--ink-3);
+    font-weight: 400;
+  }
+
+  /* ─── Tooltips ─── */
+  .tip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--line-2);
+    color: var(--ink-3);
+    font-size: 10px;
+    font-weight: 600;
+    cursor: help;
+    user-select: none;
+    transition: background .12s ease, color .12s ease;
+    position: relative;
+    font-family: var(--sans);
+    line-height: 1;
+    border: 0;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .tip:hover, .tip:focus, .tip.open {
+    background: var(--ink);
+    color: #fff;
+    outline: none;
+  }
+  .tip-popover {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 280px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 6px 24px -8px rgba(0, 0, 0, 0.12), 0 2px 6px -2px rgba(0, 0, 0, 0.05);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--ink-2);
+    text-align: left;
+    z-index: 100;
+    cursor: default;
+    /* hidden by default */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(4px);
+    transition: opacity .15s ease, transform .15s ease, visibility .15s;
+  }
+  .tip-popover::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 10px;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    transform: translateX(-50%) translateY(-50%) rotate(45deg);
+  }
+  .tip:hover .tip-popover,
+  .tip:focus .tip-popover,
+  .tip.open .tip-popover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .tip-popover strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .tip-popover .tip-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    font-size: 11px;
+    color: var(--ink-3);
+    border-top: 1px solid var(--line-2);
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+  .tip-popover .tip-row:first-of-type { margin-top: 10px; }
+
+  /* On the verdict screen, stat tiles are narrow — pin tooltip to right edge */
+  .stat-tile .tip-popover {
+    left: auto;
+    right: 0;
+    transform: translateX(0) translateY(4px);
+  }
+  .stat-tile .tip-popover::after {
+    left: auto;
+    right: 8px;
+    transform: translateY(-50%) rotate(45deg);
+  }
+  .stat-tile .tip:hover .tip-popover,
+  .stat-tile .tip:focus .tip-popover,
+  .stat-tile .tip.open .tip-popover {
+    transform: translateX(0) translateY(0);
+  }
+  .field-caption {
+    font-size: 12px;
+    color: var(--ink-3);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    margin-top: -2px;
+    transition: color .15s ease;
+  }
+  .field-caption.warn { color: #b45309; }
+  .input-shell {
+    display: flex;
+    align-items: stretch;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .12s ease, box-shadow .12s ease;
+  }
+  .input-shell:focus-within {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.06);
+  }
+  .input-shell input,
+  .input-shell select {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    padding: 12px 14px;
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--ink);
+    background: transparent;
+    width: 100%;
+    min-width: 0;
+  }
+  .input-shell .unit, .input-shell .prefix {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    font-size: 13px;
+    color: var(--ink-3);
+    background: var(--bg-2);
+  }
+  .input-shell .unit { border-left: 1px solid var(--line); }
+  .input-shell .prefix { border-right: 1px solid var(--line); }
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .opt-toggle {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--ink-2);
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+  }
+  .opt-toggle:hover { color: var(--ink); }
+  .opt-toggle svg { transition: transform .15s ease; }
+  .opt-toggle.open svg { transform: rotate(90deg); }
+  .opt-fields {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin-top: 4px;
+  }
+  .opt-fields.open { display: flex; }
+  .scenario-note {
+    font-size: 11px;
+    color: var(--ink-3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    justify-content: center;
+    text-align: center;
+  }
+  .scenario-note .pulse {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5); }
+    70% { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+  }
+
+  /* ─── Screen 3: Verdict ─── */
+  .verdict-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .verdict-header .co {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .verdict-header .co strong { color: var(--ink); font-weight: 500; }
+
+  .headline {
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .headline .num-good { color: var(--green); font-weight: 600; }
+  .headline .num-bad { color: var(--warn); font-weight: 600; }
+  .verdict-sub {
+    margin-top: 14px;
+    font-size: 16px;
+    color: var(--ink-2);
+    max-width: 600px;
+    line-height: 1.55;
+  }
+  .verdict-sub strong { color: var(--ink); font-weight: 500; }
+
+  /* Stat tiles */
+  .stats {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .stat-tile {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .stat-tile .stat-label {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-tile .stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .stat-tile .stat-value.bad { color: var(--warn); }
+  .stat-tile .stat-value.good { color: var(--green); }
+  .stat-tile .stat-trend {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-top: 6px;
+  }
+
+  /* Two-panel cost + levers */
+  .panel-row {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+  }
+  .card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .card .card-sub {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-bottom: 18px;
+  }
+
+  .mini-legend {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+    color: var(--ink-2);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line-2);
+    flex-wrap: wrap;
+  }
+  .mini-legend .legend-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-line {
+    width: 18px; height: 2px;
+    display: inline-block;
+  }
+  .legend-line.solid { background: var(--ink); }
+  .legend-line.solid.warn { background: var(--warn); height: 2.5px; }
+  .legend-line.dashed {
+    background: transparent;
+    border-top: 2px dashed var(--ink);
+    opacity: 0.55;
+  }
+
+  /* What this means */
+  .means {
+    margin-top: 32px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+  }
+  .means h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .means p {
+    font-size: 14px;
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+
+  /* Show the math */
+  .disclosure {
+    margin-top: 32px;
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+  }
+  .disclosure summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    user-select: none;
+  }
+  .disclosure summary::-webkit-details-marker { display: none; }
+  .disclosure summary svg { transition: transform .15s ease; }
+  .disclosure[open] summary svg { transform: rotate(90deg); }
+  .disclosure-body {
+    margin-top: 20px;
+    overflow-x: auto;
+  }
+  table.math {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.math th, table.math td {
+    text-align: right;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  table.math th:first-child, table.math td:first-child {
+    text-align: left;
+    color: var(--ink-2);
+  }
+  table.math thead th {
+    font-weight: 500;
+    color: var(--ink-3);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  table.math tbody tr.section td {
+    background: var(--bg-2);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    font-weight: 500;
+    padding: 8px 12px;
+  }
+  table.math tfoot td {
+    font-weight: 600;
+    border-top: 2px solid var(--ink);
+    border-bottom: 0;
+    padding-top: 12px;
+    color: var(--ink);
+  }
+
+  /* CTA — calm */
+  .cta {
+    margin-top: 32px;
+    padding: 22px 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .cta .cta-text h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .cta .cta-text p {
+    font-size: 13px;
+    color: var(--ink-2);
+    max-width: 380px;
+  }
+
+  .restart {
+    margin-top: 24px;
+    text-align: center;
+  }
+  .restart button {
+    background: none;
+    border: 0;
+    color: var(--ink-3);
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .restart button:hover { color: var(--ink); }
+
+  @media (max-width: 880px) {
+    .split { grid-template-columns: 1fr; gap: 16px; }
+    .split-left { order: 2; }
+    .split-right { order: 1; }
+  }
+  @media (max-width: 720px) {
+    .row-2, .stats, .panel-row { grid-template-columns: 1fr; }
+    .stage { padding: 36px 0 60px; }
+    .lever { grid-template-columns: 1fr; gap: 8px; }
+    .lever .lever-num { text-align: left; }
+    .cta { flex-direction: column; align-items: flex-start; }
+    .intro h1 { font-size: 28px; }
+    .preview h3 { padding-right: 0; }
+    .preview-tag { position: static; display: inline-block; margin-bottom: 8px; }
+    .tip-popover { max-width: 240px; }
+  }
+
+  @media print {
+    .restart, .cta button, .opt-toggle { display: none !important; }
+    .stage { display: block !important; padding: 20px 0; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+
+  <!-- ─── Screen 1: Promise ─── -->
+  <!-- ─── Screen 1: Intro + Inputs (combined) ─── -->
+  <section class="stage active" id="s1">
+    <div class="intro">
+      <span class="badge neutral"><span class="dot"></span>A 60-second model</span>
+      <h1>See what carbon pricing does to your <span class="accent">margins</span>.</h1>
+      <p class="lede">
+        Three numbers about your business. We'll show you the EBIT margin you're on track to lose by 2040 — and the cheapest ways to keep it.
+      </p>
+    </div>
+
+    <div class="split">
+      <!-- Left: example chart -->
+      <div class="split-left">
+        <div class="preview">
+          <div class="preview-tag">Example · $9B industrial</div>
+          <h3>Margin trajectory, 2025 → 2040</h3>
+          <p>If this company does nothing, EBIT margin goes from 9.0% to −5.7%. Fill in your numbers on the right to see your version.</p>
+          <svg viewBox="0 0 640 220" style="width: 100%; height: auto;">
+            <defs>
+              <linearGradient id="fillGrad" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#dc2626" stop-opacity="0.12"/>
+                <stop offset="100%" stop-color="#dc2626" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <line x1="60" y1="40"  x2="620" y2="40"  stroke="#f4f4f3" stroke-width="1"/>
+            <line x1="60" y1="90"  x2="620" y2="90"  stroke="#f4f4f3" stroke-width="1"/>
+            <line x1="60" y1="140" x2="620" y2="140" stroke="#1a1a1a" stroke-width="1" stroke-dasharray="2,3" opacity="0.3"/>
+            <line x1="60" y1="190" x2="620" y2="190" stroke="#f4f4f3" stroke-width="1"/>
+            <text x="50" y="44" text-anchor="end" font-size="10" fill="#8a8a8a" font-family="Inter">10%</text>
+            <text x="50" y="94" text-anchor="end" font-size="10" fill="#8a8a8a" font-family="Inter">5%</text>
+            <text x="50" y="144" text-anchor="end" font-size="10" fill="#8a8a8a" font-family="Inter">0%</text>
+            <text x="50" y="194" text-anchor="end" font-size="10" fill="#8a8a8a" font-family="Inter">−5%</text>
+            <text x="60" y="212" font-size="10" fill="#8a8a8a" font-family="Inter">2025</text>
+            <text x="340" y="212" font-size="10" fill="#8a8a8a" font-family="Inter" text-anchor="middle">2030</text>
+            <text x="620" y="212" font-size="10" fill="#8a8a8a" font-family="Inter" text-anchor="end">2040</text>
+            <line x1="60" y1="50" x2="620" y2="50" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.4"/>
+            <path d="M 60 50 L 340 105 L 620 197 L 620 50 Z" fill="url(#fillGrad)"/>
+            <path d="M 60 50 L 340 105 L 620 197" stroke="#1a1a1a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="60"  cy="50"  r="3.5" fill="#1a1a1a"/>
+            <circle cx="340" cy="105" r="3.5" fill="#1a1a1a"/>
+            <circle cx="620" cy="197" r="4.5" fill="#dc2626"/>
+            <text x="72"  y="44"  font-size="11" fill="#16a34a" font-family="Inter" font-weight="600">9.0%</text>
+            <text x="340" y="98"  font-size="11" fill="#1a1a1a" font-family="Inter" font-weight="600" text-anchor="middle">2.4%</text>
+            <text x="615" y="190" font-size="12" fill="#dc2626" font-family="Inter" font-weight="600" text-anchor="end">−5.7%</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Right: input form -->
+      <div class="split-right">
+        <div class="form-card">
+          <h4 class="form-title">Your inputs</h4>
+          <div class="form">
+            <div class="field">
+              <label>Company name <span class="hint">— optional</span></label>
+              <div class="input-shell">
+                <input type="text" id="f-name" placeholder="e.g. Northwind Industrial" value="Northwind Industrial"/>
+              </div>
+            </div>
+
+            <div class="row-2">
+              <div class="field">
+                <label>
+                  EBIT margin today
+                  <button class="tip" type="button" aria-label="What is EBIT margin?">
+                    i
+                    <span class="tip-popover" role="tooltip">
+                      <strong>EBIT margin</strong> — operating profit as a % of revenue, before interest and taxes. We assume it stays constant in this scenario, before carbon costs are applied.
+                      <span class="tip-row"><span>Software / SaaS</span><span>20–35%</span></span>
+                      <span class="tip-row"><span>Consumer goods</span><span>10–18%</span></span>
+                      <span class="tip-row"><span>Apparel / retail</span><span>6–12%</span></span>
+                      <span class="tip-row"><span>Heavy industry</span><span>5–10%</span></span>
+                    </span>
+                  </button>
+                  <span class="hint">— 2025</span>
+                </label>
+                <div class="input-shell">
+                  <input type="number" id="f-margin" value="9.2" step="0.1" min="-50" max="60"/>
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>Total operating cost <span class="hint">— 2025, in $M</span></label>
+                <div class="input-shell">
+                  <span class="prefix">$</span>
+                  <input type="number" id="f-opex" value="14560" min="1"/>
+                  <span class="unit">million</span>
+                </div>
+                <div class="field-caption" id="opex-caption">$14,560M = $14.56B</div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Annual emissions <span class="hint">— Scope 1 + 2 + 3</span></label>
+              <div class="input-shell">
+                <input type="number" id="f-emissions" value="3.13" step="0.01" min="0.001"/>
+                <span class="unit">MtCO₂e</span>
+              </div>
+            </div>
+
+            <button class="opt-toggle" id="opt-toggle" onclick="toggleOpt()">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 1L7 5L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Adjust assumptions (growth, inflation, scenario)
+            </button>
+
+            <div class="opt-fields" id="opt-fields">
+              <div class="row-2">
+                <div class="field">
+                  <label>Annual growth</label>
+                  <div class="input-shell">
+                    <input type="number" id="f-growth" value="3" step="0.1"/>
+                    <span class="unit">%/yr</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Annual inflation</label>
+                  <div class="input-shell">
+                    <input type="number" id="f-inflation" value="2" step="0.1"/>
+                    <span class="unit">%/yr</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label>Carbon price scenario</label>
+                <div class="input-shell">
+                  <select id="f-scenario">
+                    <optgroup label="Benchmark (default)">
+                      <option value="aii" selected>Aii Net Zero Apparel — $543/t by 2040</option>
+                    </optgroup>
+                    <optgroup label="NGFS · core">
+                      <option value="ngfs-nz">Net Zero 2050 — $848/t by 2040</option>
+                      <option value="ngfs-b2">Below 2°C — $137/t by 2040</option>
+                      <option value="ngfs-d">Delayed Transition — $313/t by 2040</option>
+                      <option value="ngfs-c">Current Policies — $20/t by 2040</option>
+                    </optgroup>
+                    <optgroup label="NGFS · advanced">
+                      <option value="ngfs-fw">Fragmented World — $66/t by 2040</option>
+                      <option value="ngfs-ld">Low Demand — $485/t by 2040</option>
+                      <option value="ngfs-ndc">NDCs — $162/t by 2040</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-full" onclick="calculate()">Show me my number →</button>
+
+            <div class="scenario-note">
+              <span class="pulse"></span>
+              Defaulting to the Aii Net Zero Apparel Benchmark. All inputs stay in your browser.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Screen 2: Verdict ─── -->
+  <section class="stage" id="s3">
+    <div class="verdict-header">
+      <span class="badge"><span class="dot"></span>Your results</span>
+      <span class="co">For <strong id="r-company">Northwind Industrial</strong></span>
+    </div>
+
+    <h1 class="headline" id="r-headline">
+      Without action, your <span class="num-good">9.2%</span> margin falls to <span class="num-bad">1.3%</span> by 2040.
+    </h1>
+    <p class="verdict-sub" id="r-sub">
+      Two charts. The first shows your operating cost trajectory with and without carbon. The second shows what's left as profit.
+    </p>
+
+    <div class="stats">
+      <div class="stat-tile">
+        <div class="stat-label">Cumulative cost</div>
+        <div class="stat-value bad" id="r-stat-1">$19B</div>
+        <div class="stat-trend">2025 → 2040</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">2040 carbon price</div>
+        <div class="stat-value" id="r-stat-2">$543/t</div>
+        <div class="stat-trend" id="r-stat-2-trend">Aii Net Zero Apparel</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">
+          Margin impact
+          <button class="tip" type="button" aria-label="What does pp mean?">
+            i
+            <span class="tip-popover" role="tooltip">
+              <strong>pp</strong> — percentage points. The absolute change in a percentage value. A drop from 9.2% to 1.3% is a 7.9pp drop, not a 7.9% drop.
+            </span>
+          </button>
+        </div>
+        <div class="stat-value bad" id="r-stat-3">−7.9pp</div>
+        <div class="stat-trend">EBIT margin lost</div>
+      </div>
+    </div>
+
+    <div class="panel-row">
+      <div class="card">
+        <h3>Operating cost trajectory</h3>
+        <p class="card-sub">With and without carbon costs included.</p>
+        <svg id="toc-chart" viewBox="0 0 380 260" style="width: 100%; height: auto;"></svg>
+        <div class="mini-legend">
+          <span class="legend-dot"><span class="legend-line dashed"></span> Without carbon</span>
+          <span class="legend-dot"><span class="legend-line solid warn"></span> With carbon</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>EBIT trajectory</h3>
+        <p class="card-sub">The profit you keep, with and without carbon.</p>
+        <svg id="ebit-chart" viewBox="0 0 380 260" style="width: 100%; height: auto;"></svg>
+        <div class="mini-legend">
+          <span class="legend-dot"><span class="legend-line dashed"></span> Without carbon</span>
+          <span class="legend-dot"><span class="legend-line solid warn"></span> With carbon</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="means">
+      <h4>What this means</h4>
+      <p>
+        The numbers above assume zero decarbonization progress between now and 2040. Under any credible 1.5°C scenario, carbon pricing becomes a non-discretionary line item — not an ESG metric. The companies that move first lock in lower costs for two decades. The ones that wait pay full freight on emissions they could have avoided.
+      </p>
+    </div>
+
+    <details class="disclosure">
+      <summary>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 1L7 5L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Show the math
+      </summary>
+      <div class="disclosure-body">
+        <table class="math" id="math-table">
+          <thead>
+            <tr><th>Line item</th><th>2025</th><th>2030</th><th>2040</th></tr>
+          </thead>
+          <tbody id="math-body"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <div class="cta">
+      <div class="cta-text">
+        <h4>Cutting that gap is what we do.</h4>
+        <p>Unibloom Switch finds lower-carbon suppliers and materials so Scope 3 stops driving this curve — without changing what you sell.</p>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-secondary" id="dl-pdf-btn" onclick="exportPdf()">Download PDF</button>
+        <button class="btn btn-primary">Book a call →</button>
+      </div>
+    </div>
+
+    <div class="restart">
+      <button onclick="goto(1)">← Start over with different numbers</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // ─── Navigation ───
+  function goto(n) {
+    document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+    document.getElementById('s' + n).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleOpt() {
+    document.getElementById('opt-fields').classList.toggle('open');
+    document.getElementById('opt-toggle').classList.toggle('open');
+  }
+
+  // ─── Tooltips: click-to-toggle for touch devices ───
+  // Hover handles desktop; click handles touch. Clicking outside closes.
+  document.addEventListener('click', (e) => {
+    const clickedTip = e.target.closest('.tip');
+    document.querySelectorAll('.tip.open').forEach(t => {
+      if (t !== clickedTip) t.classList.remove('open');
+    });
+    if (clickedTip) {
+      e.preventDefault();
+      // Don't toggle if user clicked inside the popover itself (e.g. selecting text)
+      if (e.target.closest('.tip-popover')) return;
+      clickedTip.classList.toggle('open');
+    }
+  });
+  // Close on Escape for keyboard users
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.tip.open').forEach(t => t.classList.remove('open'));
+    }
+  });
+
+  // ─── Live converter caption for operating cost ───
+  function updateOpexCaption() {
+    const input = document.getElementById('f-opex');
+    const caption = document.getElementById('opex-caption');
+    const v = parseFloat(input.value);
+
+    if (!v || v <= 0) {
+      caption.textContent = '';
+      caption.classList.remove('warn');
+      return;
+    }
+
+    // Plausibility check: if user typed raw dollars (e.g. 7,833,000,000),
+    // the number > 100,000 in $M would be > $100B operating cost — almost
+    // certainly a mistake. Largest companies on earth are ~$400B opex.
+    if (v > 100000) {
+      const asMillions = v / 1e6;
+      caption.innerHTML = `⚠ Looks like raw dollars — did you mean $${asMillions.toLocaleString(undefined, {maximumFractionDigits: 0})}M?`;
+      caption.classList.add('warn');
+      return;
+    }
+
+    caption.classList.remove('warn');
+    const formatted = '$' + v.toLocaleString(undefined, {maximumFractionDigits: 0}) + 'M';
+    if (v >= 1000) {
+      const inB = (v / 1000).toFixed(v/1000 >= 10 ? 1 : (v/1000 >= 1.05 ? 2 : 1));
+      caption.textContent = `${formatted} = $${inB}B`;
+    } else {
+      caption.textContent = formatted;
+    }
+  }
+  document.getElementById('f-opex').addEventListener('input', updateOpexCaption);
+  // initialize on load
+  updateOpexCaption();
+
+  // ─── Carbon price scenarios (from official COI model v2 / NGFS Phase 5) ───
+  const SCENARIOS = {
+    'aii':       { name: 'Aii Net Zero Apparel Benchmark', tier: 'Benchmark', p2025: 30,    p2030: 199,    p2040: 543    },
+    'ngfs-nz':   { name: 'NGFS Net Zero 2050',             tier: 'Default',   p2025: 15.39, p2030: 294.69, p2040: 847.86 },
+    'ngfs-b2':   { name: 'NGFS Below 2°C',                 tier: 'Basic',     p2025: 15.39, p2030: 51.63,  p2040: 136.86 },
+    'ngfs-d':    { name: 'NGFS Delayed Transition',        tier: 'Basic',     p2025: 15.39, p2030: 16.55,  p2040: 313.14 },
+    'ngfs-c':    { name: 'NGFS Current Policies',          tier: 'Basic',     p2025: 15.39, p2030: 16.55,  p2040: 20.04  },
+    'ngfs-fw':   { name: 'NGFS Fragmented World',          tier: 'Advanced',  p2025: 15.39, p2030: 16.55,  p2040: 66.07  },
+    'ngfs-ld':   { name: 'NGFS Low Demand',                tier: 'Advanced',  p2025: 15.39, p2030: 178.29, p2040: 485.37 },
+    'ngfs-ndc':  { name: 'NGFS NDCs',                      tier: 'Advanced',  p2025: 15.39, p2030: 135.78, p2040: 161.65 }
+  };
+
+  // ─── Calculation ───
+  function calc(inputs) {
+    const { margin, opex, emissions, growth, inflation, scenario } = inputs;
+    const sc = SCENARIOS[scenario];
+    const m = margin / 100;
+    const years = [2025, 2030, 2040];
+
+    // Per the official COI model v2:
+    //   • Business growth is LINEAR (not compound). 3%/yr × 15 years = 45%, not (1.03)^15.
+    //   • Emissions grow only with business growth.
+    //   • TOC grows with both: TOC × (1 + growth_eff) × (1 + inflation_eff).
+    //   • Inflation is compound (typical macro convention).
+    //   • Carbon prices are nominal USD/tCO2e (already include future inflation).
+    const growthEff = y => (y - 2025) * (growth / 100);
+    const inflEff   = y => Math.pow(1 + inflation/100, y - 2025) - 1;
+
+    const emissionsAt = y => emissions * (1 + growthEff(y));
+    const opexAt      = y => opex * (1 + growthEff(y)) * (1 + inflEff(y));
+    const revenueAt   = y => opexAt(y) / (1 - m);
+    const ebitAt      = y => revenueAt(y) - opexAt(y);
+    const priceAt     = y => y === 2025 ? sc.p2025 : y === 2030 ? sc.p2030 : sc.p2040;
+    const carbonCostAt = y => emissionsAt(y) * priceAt(y);    // Mt × $/t = $M
+    const ebitAfterAt  = y => ebitAt(y) - carbonCostAt(y);
+    const marginAfterAt = y => ebitAfterAt(y) / revenueAt(y);
+
+    return years.map(y => ({
+      year: y,
+      emissions: emissionsAt(y),
+      opex: opexAt(y),
+      revenue: revenueAt(y),
+      ebit: ebitAt(y),
+      price: priceAt(y),
+      carbonCost: carbonCostAt(y),
+      opexAfter: opexAt(y) + carbonCostAt(y),
+      ebitAfter: ebitAfterAt(y),
+      marginAfter: marginAfterAt(y),
+      marginBefore: m
+    }));
+  }
+
+  // ─── Formatting ───
+  const fmtMoney = (m) => {
+    const abs = Math.abs(m);
+    const sign = m < 0 ? '−' : '';
+    if (abs >= 1000) return sign + '$' + (abs/1000).toFixed(abs/1000 >= 10 ? 0 : 1) + 'B';
+    return sign + '$' + Math.round(abs) + 'M';
+  };
+  const fmtPct = (r, digits=1) => (r*100).toFixed(digits) + '%';
+  const fmtPp  = (r, digits=1) => {
+    const v = r * 100;
+    return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(digits) + 'pp';
+  };
+  const fmtMt  = (v) => v.toFixed(2) + ' MtCO₂e';
+  const fmtPrice = (v) => '$' + Math.round(v) + '/t';
+
+  // ─── Render verdict ───
+  function calculate() {
+    const inputs = {
+      margin:     parseFloat(document.getElementById('f-margin').value)     || 9,
+      opex:       parseFloat(document.getElementById('f-opex').value)       || 7833,
+      emissions:  parseFloat(document.getElementById('f-emissions').value)  || 3.13,
+      growth:     parseFloat(document.getElementById('f-growth').value)     || 3,
+      inflation:  parseFloat(document.getElementById('f-inflation').value)  || 2,
+      scenario:   document.getElementById('f-scenario').value
+    };
+    const company = document.getElementById('f-name').value || 'your company';
+    const r = calc(inputs);
+
+    document.getElementById('r-company').textContent = company;
+    const before = r[0].marginBefore;
+    const after2040 = r[2].marginAfter;
+    const drop = (before - after2040) * 100; // positive number = margin decreased
+
+    let headline;
+    if (after2040 < 0) {
+      headline = `Without action, your <span class="num-good">${fmtPct(before)}</span> margin becomes a <span class="num-bad">${fmtPct(after2040)}</span> loss by 2040.`;
+    } else if (drop > 1) {
+      headline = `Without action, your <span class="num-good">${fmtPct(before)}</span> margin falls to <span class="num-bad">${fmtPct(after2040)}</span> by 2040.`;
+    } else {
+      headline = `Under this scenario, your margin holds near <span class="num-good">${fmtPct(after2040)}</span> through 2040 — but only because carbon prices stay low.`;
+    }
+    document.getElementById('r-headline').innerHTML = headline;
+
+    const sc = SCENARIOS[inputs.scenario];
+    document.getElementById('r-sub').innerHTML =
+      `Under ${sc.name}, you face a <strong>${fmtMoney(r[2].carbonCost)} annual carbon cost</strong> by 2040 — equivalent to a <strong>${drop.toFixed(1)}-point</strong> drop in EBIT margin. Two charts below show how operating cost and EBIT diverge from the unpriced baseline.`;
+
+    // Stat tiles — integrate cumulative cost across all 16 years (2025-2040)
+    // Emissions grow linearly with business growth (per official model)
+    let cumulative = 0;
+    for (let y = 2025; y <= 2040; y++) {
+      const yearsFrom2025 = y - 2025;
+      const emissionsY = inputs.emissions * (1 + yearsFrom2025 * inputs.growth/100);
+      // Linear interpolation of carbon price between scenario points (2025, 2030, 2040)
+      let priceY;
+      if (y <= 2030) {
+        priceY = sc.p2025 + (sc.p2030 - sc.p2025) * (y - 2025) / 5;
+      } else {
+        priceY = sc.p2030 + (sc.p2040 - sc.p2030) * (y - 2030) / 10;
+      }
+      cumulative += emissionsY * priceY;
+    }
+    document.getElementById('r-stat-1').textContent = fmtMoney(cumulative);
+    document.getElementById('r-stat-2').textContent = fmtPrice(sc.p2040);
+    document.getElementById('r-stat-2-trend').textContent = sc.name;
+    document.getElementById('r-stat-3').textContent = '−' + drop.toFixed(1) + 'pp';
+
+    drawTrajectoryCharts(r);
+    renderMath(r);
+    goto(3);
+  }
+
+  // ─── Two-line trajectory charts (TOC and EBIT, with/without carbon) ───
+  function drawTrajectoryCharts(r) {
+    const tocSeries = {
+      without: r.map(d => ({ year: d.year, val: d.opex })),
+      with:    r.map(d => ({ year: d.year, val: d.opexAfter }))
+    };
+    const ebitSeries = {
+      without: r.map(d => ({ year: d.year, val: d.ebit })),
+      with:    r.map(d => ({ year: d.year, val: d.ebitAfter }))
+    };
+    drawTwoLineChart('toc-chart',  tocSeries,  { axisType: 'currency', allowNegative: false });
+    drawTwoLineChart('ebit-chart', ebitSeries, { axisType: 'currency', allowNegative: true });
+  }
+
+  function drawTwoLineChart(elId, series, opts) {
+    const svg = document.getElementById(elId);
+    const W = 380, H = 260;
+    const padL = 60, padR = 18, padT = 24, padB = 36;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    // Determine y-axis range
+    const allVals = [...series.without.map(d => d.val), ...series.with.map(d => d.val)];
+    const maxVal = Math.max(...allVals);
+    const minVal = opts.allowNegative ? Math.min(...allVals, 0) : 0;
+    // Snap max up to a "nice" round number for clean axis ticks
+    const range = maxVal - minVal;
+    const step = niceStep(range / 4);
+    const yMax = Math.ceil(maxVal / step) * step;
+    const yMin = minVal < 0 ? Math.floor(minVal / step) * step : 0;
+
+    const xs = [2025, 2030, 2040];
+    const xPos = y => padL + ((y - 2025) / 15) * plotW;
+    const yPos = v => padT + (1 - (v - yMin) / (yMax - yMin)) * plotH;
+
+    let g = '';
+
+    // Gridlines & y-axis labels
+    for (let v = yMin; v <= yMax + 0.0001; v += step) {
+      const y = yPos(v);
+      const isZero = v === 0;
+      g += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${isZero ? '#1a1a1a' : '#ececec'}" stroke-width="1" ${isZero ? 'stroke-dasharray="2,3" opacity="0.3"' : ''}/>`;
+      g += `<text x="${padL-8}" y="${y+3}" text-anchor="end" font-size="10" fill="#8a8a8a" font-family="Inter">${fmtAxis(v, opts.axisType)}</text>`;
+    }
+
+    // X-axis labels
+    xs.forEach(yr => {
+      g += `<text x="${xPos(yr)}" y="${H - padB + 18}" text-anchor="middle" font-size="11" fill="#525252" font-family="Inter">${yr}</text>`;
+    });
+
+    // Build path strings
+    const ptsW = series.without.map(d => `${xPos(d.year)},${yPos(d.val)}`);
+    const ptsC = series.with.map(d => `${xPos(d.year)},${yPos(d.val)}`);
+    const pathW = `M ${ptsW.join(' L ')}`;
+    const pathC = `M ${ptsC.join(' L ')}`;
+
+    // Area fill between the two lines (representing the gap = cost of inaction)
+    // Build area: top = without-carbon line, bottom = with-carbon line, going right then back
+    const areaPath = `M ${ptsW.join(' L ')} L ${[...series.with].reverse().map(d => `${xPos(d.year)},${yPos(d.val)}`).join(' L ')} Z`;
+    g += `<defs><linearGradient id="grad-${elId}" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#dc2626" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#dc2626" stop-opacity="0.02"/>
+    </linearGradient></defs>`;
+    g += `<path d="${areaPath}" fill="url(#grad-${elId})" style="opacity:0; animation: areaFade 0.6s 0.5s forwards;"/>`;
+
+    // Without-carbon line (dashed, dark)
+    g += `<path d="${pathW}" stroke="#1a1a1a" stroke-width="1.75" stroke-dasharray="5,4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.55" style="stroke-dashoffset: 1000; animation: drawLine 0.9s 0.1s ease-out forwards;"/>`;
+    // With-carbon line (solid, red)
+    g += `<path d="${pathC}" stroke="#dc2626" stroke-width="2.25" fill="none" stroke-linecap="round" stroke-linejoin="round" style="stroke-dashoffset: 1000; stroke-dasharray: 1000; animation: drawLine 0.9s 0.4s ease-out forwards;"/>`;
+
+    // Markers
+    series.without.forEach((d, i) => {
+      g += `<circle cx="${xPos(d.year)}" cy="${yPos(d.val)}" r="3" fill="white" stroke="#1a1a1a" stroke-width="1.5" opacity="0.7" style="opacity:0; animation: ptFade 0.3s ${0.9 + i*0.05}s forwards;"/>`;
+    });
+    series.with.forEach((d, i) => {
+      const last = i === series.with.length - 1;
+      g += `<circle cx="${xPos(d.year)}" cy="${yPos(d.val)}" r="${last ? 4.5 : 3.5}" fill="#dc2626" style="opacity:0; animation: ptFade 0.3s ${1.1 + i*0.05}s forwards;"/>`;
+    });
+
+    // Endpoint labels (2040 only, to keep it clean).
+    // If the two endpoints are close in y-coordinate, stagger them vertically so labels don't collide.
+    const lastW = series.without[series.without.length - 1];
+    const lastC = series.with[series.with.length - 1];
+    const yW = yPos(lastW.val);
+    const yC = yPos(lastC.val);
+    const close = Math.abs(yW - yC) < 22;  // labels are ~14px tall; need >22px gap to avoid overlap
+    // Default: "with" goes opposite side from "without" relative to its line
+    let dyW = -8; // above
+    let dyC = lastC.val < lastW.val ? 16 : -8;
+    if (close) {
+      // force one above and one below regardless
+      if (lastC.val >= lastW.val) { dyC = -10; dyW = 18; }   // with on top, without below
+      else                         { dyC = 18;  dyW = -10; } // without on top, with below
+    }
+    g += `<text x="${xPos(lastW.year) - 6}" y="${yW + dyW}" text-anchor="end" font-size="11" font-weight="600" fill="#1a1a1a" font-family="Inter" opacity="0.75" style="opacity:0; animation: ptFade 0.3s 1.3s forwards;">${fmtMoney(lastW.val)}</text>`;
+    g += `<text x="${xPos(lastC.year) - 6}" y="${yC + dyC}" text-anchor="end" font-size="12" font-weight="600" fill="#dc2626" font-family="Inter" style="opacity:0; animation: ptFade 0.3s 1.4s forwards;">${fmtMoney(lastC.val)}</text>`;
+
+    g += `<style>
+      @keyframes drawLine { to { stroke-dashoffset: 0; } }
+      @keyframes areaFade { to { opacity: 1; } }
+      @keyframes ptFade   { to { opacity: 1; } }
+    </style>`;
+
+    svg.innerHTML = g;
+  }
+
+  // Pick a "nice" axis step (1, 2, 2.5, 5, 10 × 10^n)
+  function niceStep(rough) {
+    if (rough <= 0) return 1;
+    const exp = Math.floor(Math.log10(rough));
+    const base = rough / Math.pow(10, exp);
+    let nice;
+    if (base <= 1) nice = 1;
+    else if (base <= 2) nice = 2;
+    else if (base <= 2.5) nice = 2.5;
+    else if (base <= 5) nice = 5;
+    else nice = 10;
+    return nice * Math.pow(10, exp);
+  }
+
+  function fmtAxis(v, type) {
+    if (type === 'currency') {
+      const abs = Math.abs(v);
+      const sign = v < 0 ? '−' : '';
+      if (abs >= 1000) return sign + '$' + (abs/1000).toFixed(abs/1000 >= 10 ? 0 : 1) + 'B';
+      return sign + '$' + Math.round(abs) + 'M';
+    }
+    return v.toString();
+  }
+
+  // ─── Math table ───
+  function renderMath(r) {
+    const tb = document.getElementById('math-body');
+    const row = (label, hint, vals, isBold) => `
+      <tr${isBold ? ' style="font-weight:600;"' : ''}>
+        <td>
+          <div>${label}</div>
+          ${hint ? `<div style="font-size:11px;color:var(--ink-3);margin-top:2px;">${hint}</div>` : ''}
+        </td>
+        ${vals.map(v => `<td>${v}</td>`).join('')}
+      </tr>`;
+    const section = (label) => `<tr class="section"><td colspan="4">${label}</td></tr>`;
+    tb.innerHTML = `
+      ${section('Volume & cost (before carbon)')}
+      ${row('Emissions', 'Scope 1+2+3, grown by business growth', r.map(d => fmtMt(d.emissions)))}
+      ${row('Operating cost', 'With growth + inflation', r.map(d => fmtMoney(d.opex)))}
+      ${row('Revenue', 'Implied from margin', r.map(d => fmtMoney(d.revenue)))}
+      ${row('EBIT', 'Revenue − op cost', r.map(d => fmtMoney(d.ebit)))}
+      ${section('Carbon price impact')}
+      ${row('Carbon price', 'USD per tonne CO₂e', r.map(d => fmtPrice(d.price)))}
+      ${row('Carbon cost', 'Emissions × price', r.map(d => '−' + fmtMoney(d.carbonCost)))}
+      ${section('After carbon price')}
+      ${row('Operating cost', 'Including carbon cost', r.map(d => fmtMoney(d.opexAfter)))}
+      ${row('EBIT', 'After carbon cost', r.map(d => fmtMoney(d.ebitAfter)), true)}
+      ${row('EBIT margin', 'The Cost of Inaction', r.map(d => fmtPct(d.marginAfter)), true)}
+      ${row('Margin impact', 'vs unpriced baseline', r.map(d => fmtPp(d.marginAfter - d.marginBefore)))}
+    `;
+  }
+
+  // ─── PDF download ───
+  // Lazy-loads html2canvas + jsPDF on first click. Captures the verdict
+  // screen as an image and wraps it in a one-page PDF with a header strip.
+  // Falls back to window.print() if the libraries fail to load (e.g. CDN
+  // blocked, offline).
+
+  let _pdfLibsPromise = null;
+  function loadPdfLibs() {
+    if (_pdfLibsPromise) return _pdfLibsPromise;
+    _pdfLibsPromise = new Promise((resolve, reject) => {
+      const loadScript = (src) => new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = res;
+        s.onerror = () => rej(new Error('Failed to load ' + src));
+        document.head.appendChild(s);
+      });
+      Promise.all([
+        loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+        loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+      ]).then(resolve).catch(reject);
+    });
+    return _pdfLibsPromise;
+  }
+
+  function setBtnState(state) {
+    const btn = document.getElementById('dl-pdf-btn');
+    if (!btn) return;
+    if (state === 'loading') {
+      btn.disabled = true;
+      btn.dataset.original = btn.textContent;
+      btn.textContent = 'Generating PDF…';
+      btn.style.opacity = '0.7';
+      btn.style.cursor = 'wait';
+    } else {
+      btn.disabled = false;
+      btn.textContent = btn.dataset.original || 'Download PDF';
+      btn.style.opacity = '';
+      btn.style.cursor = '';
+    }
+  }
+
+  // Force every animated element in the cloned DOM to its final state.
+  // Strategy: inject a style block with !important rules that override
+  // any inline animation styles, plus walk the DOM and explicitly set
+  // opacity/transform/stroke-dashoffset on any element with an inline animation.
+  function freezeAnimations(scope) {
+    // 1. Stylesheet override — kills all CSS animations and transitions
+    const css = document.createElement('style');
+    css.textContent = `
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+      [style*="opacity"] { opacity: 1 !important; }
+      [style*="stroke-dashoffset"] { stroke-dashoffset: 0 !important; }
+    `;
+    scope.insertBefore(css, scope.firstChild);
+
+    // 2. Walk anything with inline style and clean up the initial-state cruft
+    scope.querySelectorAll('[style]').forEach(el => {
+      const s = el.getAttribute('style') || '';
+      if (s.includes('animation') || s.includes('opacity') || s.includes('stroke-dashoffset')) {
+        // Inline opacity:0 / stroke-dashoffset:1000 etc. would still apply
+        // because they're inline; the !important rule above handles it,
+        // but be defensive in case browser quirks break that.
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+        if (el.hasAttribute('style') && el.getAttribute('style').includes('stroke-dashoffset')) {
+          el.style.strokeDashoffset = '0';
+        }
+      }
+    });
+  }
+
+  // Read company + scenario for the header strip and filename
+  function getReportMeta() {
+    const company = (document.getElementById('r-company')?.textContent || 'Your Company').trim();
+    const scenario = (document.getElementById('r-stat-2-trend')?.textContent || '').trim();
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return { company, scenario, date };
+  }
+
+  function slugify(s) {
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+  }
+
+  async function exportPdf() {
+    setBtnState('loading');
+
+    try {
+      // Close any open tooltips so they don't appear in the capture
+      document.querySelectorAll('.tip.open').forEach(t => t.classList.remove('open'));
+
+      await loadPdfLibs();
+      // Wait for fonts to fully load so capture uses Inter, not a fallback
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      const target = document.getElementById('s3');
+      if (!target) throw new Error('Verdict section not found');
+
+      // Clone the node off-screen, freeze its animations, capture it.
+      // Cloning means we don't disturb the live page.
+      const clone = target.cloneNode(true);
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:fixed;left:-10000px;top:0;width:760px;background:#fafaf9;padding:32px;';
+      wrap.appendChild(clone);
+      document.body.appendChild(wrap);
+
+      // Hide elements that don't belong in a printed report:
+      //   - CTA block (interactive only)
+      //   - Restart link
+      //   - Disclosure (math table, kept tight)
+      //   - Tooltip trigger icons (no value when you can't tap them)
+      clone.querySelectorAll('.cta, .restart, details.disclosure, .tip').forEach(el => el.style.display = 'none');
+      // Snap any animated elements to final state
+      freezeAnimations(clone);
+
+      // Wait one frame so the layout settles
+      await new Promise(r => requestAnimationFrame(r));
+
+      const canvas = await html2canvas(wrap, {
+        scale: 1.5,               // crisp without bloating file size
+        backgroundColor: '#fafaf9',
+        logging: false,
+        useCORS: true
+      });
+
+      document.body.removeChild(wrap);
+
+      // Build the PDF
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const margin = 14;
+
+      const meta = getReportMeta();
+
+      // Header strip
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(11);
+      pdf.setTextColor(26, 26, 26);
+      pdf.text('Risk of Inaction · Carbon Price Calculator', margin, margin + 2);
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.setTextColor(138, 138, 138);
+      pdf.text(`${meta.company}  ·  ${meta.scenario}  ·  ${meta.date}`, margin, margin + 8);
+
+      // Divider
+      pdf.setDrawColor(236, 236, 236);
+      pdf.setLineWidth(0.2);
+      pdf.line(margin, margin + 12, pageW - margin, margin + 12);
+
+      // Image, scaled to fit width with margins
+      const imgW = pageW - margin * 2;
+      const imgH = (canvas.height / canvas.width) * imgW;
+      const imgY = margin + 18;
+
+      // If the image is taller than the page, scale to fit height instead
+      const maxImgH = pageH - imgY - margin;
+      let finalW = imgW;
+      let finalH = imgH;
+      if (imgH > maxImgH) {
+        finalH = maxImgH;
+        finalW = (canvas.width / canvas.height) * finalH;
+      }
+      // JPEG keeps the file ~10x smaller than PNG with no perceptible loss
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      pdf.addImage(imgData, 'JPEG', margin + (imgW - finalW) / 2, imgY, finalW, finalH);
+
+      // Footer
+      pdf.setFontSize(8);
+      pdf.setTextColor(170, 170, 170);
+      pdf.text('Generated by Unibloom · Risk of Inaction', margin, pageH - 8);
+
+      const filename = `risk-of-inaction-${slugify(meta.company) || 'report'}.pdf`;
+      pdf.save(filename);
+
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+      // Graceful fallback to native print dialog
+      alert("Couldn't generate the PDF — opening your browser's print dialog instead. Choose 'Save as PDF' from the destination menu.");
+      window.print();
+    } finally {
+      setBtnState('ready');
+    }
+  }
+</script>
+
+</body>
+</html>
