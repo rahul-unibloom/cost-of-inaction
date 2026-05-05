@@ -14,18 +14,21 @@
     --bg-2: #fafaf9;
     --surface: #ffffff;
     --line: #ececec;
-    --line-2: #f4f4f3;
+    --line-2: #f3f4f6;       /* matches Unibloom's light-grey bg */
     --line-3: #f7f7f6;
-    --ink: #1a1a1a;
-    --ink-2: #525252;
-    --ink-3: #8a8a8a;
-    --green: #16a34a;
-    --green-soft: #f0fdf4;
-    --green-border: #dcfce7;
-    --warn: #dc2626;
-    --warn-soft: #fef2f2;
-    --warn-border: #fee2e2;
-    --neutral-bar: #d4d4d4;
+    --ink: #122c27;          /* Unibloom primary dark green */
+    --ink-2: #2b6054;        /* Unibloom mid green */
+    --ink-3: #758696;        /* Unibloom muted text */
+    --green: #2b6054;        /* brand mid green for "good" numbers */
+    --green-2: #3b8c7d;      /* brand accent green */
+    --green-soft: #e9fff8;   /* Unibloom mint background */
+    --green-border: #c1ebd8;
+    --warn: #c0392b;         /* terracotta — brand-adjacent warning */
+    --warn-soft: #fdedec;
+    --warn-border: #f8d7d4;
+    --cta: #cd5909;          /* Unibloom brand orange for primary CTAs */
+    --cta-2: #b04c07;        /* darker orange for hover */
+    --neutral-bar: #abb9b4;  /* Unibloom muted */
     --radius-sm: 8px;
     --radius: 12px;
     --radius-lg: 16px;
@@ -111,10 +114,10 @@
     white-space: nowrap;
   }
   .btn-primary {
-    background: var(--ink);
+    background: var(--cta);
     color: #fff;
   }
-  .btn-primary:hover { background: #000; transform: translateY(-1px); }
+  .btn-primary:hover { background: var(--cta-2); transform: translateY(-1px); }
   .btn-secondary {
     background: var(--bg-2);
     color: var(--ink);
@@ -360,7 +363,7 @@
   }
   .input-shell:focus-within {
     border-color: var(--ink);
-    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.06);
+    box-shadow: 0 0 0 3px rgba(43, 96, 84, 0.10);
   }
   .input-shell input,
   .input-shell select {
@@ -733,30 +736,30 @@
           <svg viewBox="0 0 640 220" style="width: 100%; height: auto;">
             <defs>
               <linearGradient id="fillGrad" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="#dc2626" stop-opacity="0.12"/>
-                <stop offset="100%" stop-color="#dc2626" stop-opacity="0"/>
+                <stop offset="0%" stop-color="#c0392b" stop-opacity="0.12"/>
+                <stop offset="100%" stop-color="#c0392b" stop-opacity="0"/>
               </linearGradient>
             </defs>
             <line x1="60" y1="40"  x2="620" y2="40"  stroke="#f4f4f3" stroke-width="1"/>
             <line x1="60" y1="90"  x2="620" y2="90"  stroke="#f4f4f3" stroke-width="1"/>
-            <line x1="60" y1="140" x2="620" y2="140" stroke="#1a1a1a" stroke-width="1" stroke-dasharray="2,3" opacity="0.3"/>
+            <line x1="60" y1="140" x2="620" y2="140" stroke="#122c27" stroke-width="1" stroke-dasharray="2,3" opacity="0.3"/>
             <line x1="60" y1="190" x2="620" y2="190" stroke="#f4f4f3" stroke-width="1"/>
-            <text x="50" y="44" text-anchor="end" font-size="10" fill="#8a8a8a" font-family="Inter">10%</text>
-            <text x="50" y="94" text-anchor="end" font-size="10" fill="#8a8a8a" font-family="Inter">5%</text>
-            <text x="50" y="144" text-anchor="end" font-size="10" fill="#8a8a8a" font-family="Inter">0%</text>
-            <text x="50" y="194" text-anchor="end" font-size="10" fill="#8a8a8a" font-family="Inter">−5%</text>
-            <text x="60" y="212" font-size="10" fill="#8a8a8a" font-family="Inter">2025</text>
-            <text x="340" y="212" font-size="10" fill="#8a8a8a" font-family="Inter" text-anchor="middle">2030</text>
-            <text x="620" y="212" font-size="10" fill="#8a8a8a" font-family="Inter" text-anchor="end">2040</text>
+            <text x="50" y="44" text-anchor="end" font-size="10" fill="#758696" font-family="Inter">10%</text>
+            <text x="50" y="94" text-anchor="end" font-size="10" fill="#758696" font-family="Inter">5%</text>
+            <text x="50" y="144" text-anchor="end" font-size="10" fill="#758696" font-family="Inter">0%</text>
+            <text x="50" y="194" text-anchor="end" font-size="10" fill="#758696" font-family="Inter">−5%</text>
+            <text x="60" y="212" font-size="10" fill="#758696" font-family="Inter">2025</text>
+            <text x="340" y="212" font-size="10" fill="#758696" font-family="Inter" text-anchor="middle">2030</text>
+            <text x="620" y="212" font-size="10" fill="#758696" font-family="Inter" text-anchor="end">2040</text>
             <line x1="60" y1="50" x2="620" y2="50" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.4"/>
             <path d="M 60 50 L 340 105 L 620 197 L 620 50 Z" fill="url(#fillGrad)"/>
-            <path d="M 60 50 L 340 105 L 620 197" stroke="#1a1a1a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="60"  cy="50"  r="3.5" fill="#1a1a1a"/>
-            <circle cx="340" cy="105" r="3.5" fill="#1a1a1a"/>
-            <circle cx="620" cy="197" r="4.5" fill="#dc2626"/>
+            <path d="M 60 50 L 340 105 L 620 197" stroke="#122c27" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="60"  cy="50"  r="3.5" fill="#122c27"/>
+            <circle cx="340" cy="105" r="3.5" fill="#122c27"/>
+            <circle cx="620" cy="197" r="4.5" fill="#c0392b"/>
             <text x="72"  y="44"  font-size="11" fill="#16a34a" font-family="Inter" font-weight="600">9.0%</text>
-            <text x="340" y="98"  font-size="11" fill="#1a1a1a" font-family="Inter" font-weight="600" text-anchor="middle">2.4%</text>
-            <text x="615" y="190" font-size="12" fill="#dc2626" font-family="Inter" font-weight="600" text-anchor="end">−5.7%</text>
+            <text x="340" y="98"  font-size="11" fill="#122c27" font-family="Inter" font-weight="600" text-anchor="middle">2.4%</text>
+            <text x="615" y="190" font-size="12" fill="#c0392b" font-family="Inter" font-weight="600" text-anchor="end">−5.7%</text>
           </svg>
         </div>
       </div>
@@ -1205,13 +1208,13 @@
     for (let v = yMin; v <= yMax + 0.0001; v += step) {
       const y = yPos(v);
       const isZero = v === 0;
-      g += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${isZero ? '#1a1a1a' : '#ececec'}" stroke-width="1" ${isZero ? 'stroke-dasharray="2,3" opacity="0.3"' : ''}/>`;
-      g += `<text x="${padL-8}" y="${y+3}" text-anchor="end" font-size="10" fill="#8a8a8a" font-family="Inter">${fmtAxis(v, opts.axisType)}</text>`;
+      g += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${isZero ? '#122c27' : '#ececec'}" stroke-width="1" ${isZero ? 'stroke-dasharray="2,3" opacity="0.3"' : ''}/>`;
+      g += `<text x="${padL-8}" y="${y+3}" text-anchor="end" font-size="10" fill="#758696" font-family="Inter">${fmtAxis(v, opts.axisType)}</text>`;
     }
 
     // X-axis labels
     xs.forEach(yr => {
-      g += `<text x="${xPos(yr)}" y="${H - padB + 18}" text-anchor="middle" font-size="11" fill="#525252" font-family="Inter">${yr}</text>`;
+      g += `<text x="${xPos(yr)}" y="${H - padB + 18}" text-anchor="middle" font-size="11" fill="#2b6054" font-family="Inter">${yr}</text>`;
     });
 
     // Build path strings
@@ -1224,23 +1227,23 @@
     // Build area: top = without-carbon line, bottom = with-carbon line, going right then back
     const areaPath = `M ${ptsW.join(' L ')} L ${[...series.with].reverse().map(d => `${xPos(d.year)},${yPos(d.val)}`).join(' L ')} Z`;
     g += `<defs><linearGradient id="grad-${elId}" x1="0" x2="0" y1="0" y2="1">
-      <stop offset="0%" stop-color="#dc2626" stop-opacity="0.12"/>
-      <stop offset="100%" stop-color="#dc2626" stop-opacity="0.02"/>
+      <stop offset="0%" stop-color="#c0392b" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#c0392b" stop-opacity="0.02"/>
     </linearGradient></defs>`;
     g += `<path d="${areaPath}" fill="url(#grad-${elId})" style="opacity:0; animation: areaFade 0.6s 0.5s forwards;"/>`;
 
     // Without-carbon line (dashed, dark)
-    g += `<path d="${pathW}" stroke="#1a1a1a" stroke-width="1.75" stroke-dasharray="5,4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.55" style="stroke-dashoffset: 1000; animation: drawLine 0.9s 0.1s ease-out forwards;"/>`;
+    g += `<path d="${pathW}" stroke="#122c27" stroke-width="1.75" stroke-dasharray="5,4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.55" style="stroke-dashoffset: 1000; animation: drawLine 0.9s 0.1s ease-out forwards;"/>`;
     // With-carbon line (solid, red)
-    g += `<path d="${pathC}" stroke="#dc2626" stroke-width="2.25" fill="none" stroke-linecap="round" stroke-linejoin="round" style="stroke-dashoffset: 1000; stroke-dasharray: 1000; animation: drawLine 0.9s 0.4s ease-out forwards;"/>`;
+    g += `<path d="${pathC}" stroke="#c0392b" stroke-width="2.25" fill="none" stroke-linecap="round" stroke-linejoin="round" style="stroke-dashoffset: 1000; stroke-dasharray: 1000; animation: drawLine 0.9s 0.4s ease-out forwards;"/>`;
 
     // Markers
     series.without.forEach((d, i) => {
-      g += `<circle cx="${xPos(d.year)}" cy="${yPos(d.val)}" r="3" fill="white" stroke="#1a1a1a" stroke-width="1.5" opacity="0.7" style="opacity:0; animation: ptFade 0.3s ${0.9 + i*0.05}s forwards;"/>`;
+      g += `<circle cx="${xPos(d.year)}" cy="${yPos(d.val)}" r="3" fill="white" stroke="#122c27" stroke-width="1.5" opacity="0.7" style="opacity:0; animation: ptFade 0.3s ${0.9 + i*0.05}s forwards;"/>`;
     });
     series.with.forEach((d, i) => {
       const last = i === series.with.length - 1;
-      g += `<circle cx="${xPos(d.year)}" cy="${yPos(d.val)}" r="${last ? 4.5 : 3.5}" fill="#dc2626" style="opacity:0; animation: ptFade 0.3s ${1.1 + i*0.05}s forwards;"/>`;
+      g += `<circle cx="${xPos(d.year)}" cy="${yPos(d.val)}" r="${last ? 4.5 : 3.5}" fill="#c0392b" style="opacity:0; animation: ptFade 0.3s ${1.1 + i*0.05}s forwards;"/>`;
     });
 
     // Endpoint labels (2040 only, to keep it clean).
@@ -1258,8 +1261,8 @@
       if (lastC.val >= lastW.val) { dyC = -10; dyW = 18; }   // with on top, without below
       else                         { dyC = 18;  dyW = -10; } // without on top, with below
     }
-    g += `<text x="${xPos(lastW.year) - 6}" y="${yW + dyW}" text-anchor="end" font-size="11" font-weight="600" fill="#1a1a1a" font-family="Inter" opacity="0.75" style="opacity:0; animation: ptFade 0.3s 1.3s forwards;">${fmtMoney(lastW.val)}</text>`;
-    g += `<text x="${xPos(lastC.year) - 6}" y="${yC + dyC}" text-anchor="end" font-size="12" font-weight="600" fill="#dc2626" font-family="Inter" style="opacity:0; animation: ptFade 0.3s 1.4s forwards;">${fmtMoney(lastC.val)}</text>`;
+    g += `<text x="${xPos(lastW.year) - 6}" y="${yW + dyW}" text-anchor="end" font-size="11" font-weight="600" fill="#122c27" font-family="Inter" opacity="0.75" style="opacity:0; animation: ptFade 0.3s 1.3s forwards;">${fmtMoney(lastW.val)}</text>`;
+    g += `<text x="${xPos(lastC.year) - 6}" y="${yC + dyC}" text-anchor="end" font-size="12" font-weight="600" fill="#c0392b" font-family="Inter" style="opacity:0; animation: ptFade 0.3s 1.4s forwards;">${fmtMoney(lastC.val)}</text>`;
 
     g += `<style>
       @keyframes drawLine { to { stroke-dashoffset: 0; } }
@@ -1467,12 +1470,12 @@
       // Header strip
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(11);
-      pdf.setTextColor(26, 26, 26);
+      pdf.setTextColor(18, 44, 39);    // --ink (#122c27)
       pdf.text('Risk of Inaction · Carbon Price Calculator', margin, margin + 2);
 
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(9);
-      pdf.setTextColor(138, 138, 138);
+      pdf.setTextColor(117, 134, 150); // --ink-3 (#758696)
       pdf.text(`${meta.company}  ·  ${meta.scenario}  ·  ${meta.date}`, margin, margin + 8);
 
       // Divider
