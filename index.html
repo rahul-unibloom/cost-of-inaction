@@ -98,6 +98,16 @@
     color: var(--ink-2);
   }
   .badge.neutral .dot { background: var(--ink-3); }
+  /* Solid variant — used to make a promise badge stand out (e.g. "60-second model" on the entry screen) */
+  .badge.solid {
+    background: var(--green-2);
+    color: #fff;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .badge.solid .dot { background: #fff; }
 
   /* Buttons */
   .btn {
@@ -1046,7 +1056,7 @@
   <!-- ─── Screen 1: Intro + Inputs (combined) ─── -->
   <section class="stage active" id="s1">
     <div class="intro">
-      <span class="badge neutral"><span class="dot"></span>A 60-second model</span>
+      <span class="badge solid"><span class="dot"></span>A 60-second model</span>
       <h1>See what carbon pricing does to your <span class="accent">margins</span>.</h1>
       <p class="lede">
         Three numbers about your business. We'll show you the EBIT margin you're on track to lose by 2040 — and the cheapest ways to keep it.
@@ -1138,7 +1148,7 @@
             <div class="field">
               <label>Annual emissions <span class="hint">— Scope 1 + 2 + 3</span></label>
               <div class="input-shell">
-                <input type="number" id="f1-emissions" value="3.13" step="0.01" min="0.001"/>
+                <input type="number" id="f1-emissions" value="3.13" step="0.01" min="0"/>
                 <span class="unit">MtCO₂e</span>
               </div>
             </div>
@@ -1259,7 +1269,7 @@
             <div class="field">
               <label>Annual emissions <span class="hint">— Scope 1+2+3</span></label>
               <div class="input-shell">
-                <input type="number" id="f-emissions" value="3.13" step="0.01" min="0.001"/>
+                <input type="number" id="f-emissions" value="3.13" step="0.01" min="0"/>
                 <span class="unit">MtCO₂e</span>
               </div>
             </div>
@@ -1342,7 +1352,7 @@
       <!-- RIGHT: results -->
       <div class="verdict-results-pane">
         <h1 class="headline" id="r-headline">
-          Without action, your <span class="num-good">9.2%</span> margin falls to <span class="num-bad">1.3%</span> by 2040.
+          Without action, your <span class="num-good">9.2%</span> margin falls to <span class="num-bad">5.7%</span> by 2030, and <span class="num-bad">1.3%</span> by 2040.
         </h1>
         <p class="verdict-sub" id="r-sub">
           Two charts below show how operating cost and EBIT diverge from the unpriced baseline.
@@ -1705,12 +1715,18 @@
   // Called both from the initial calculate() (after s1→s3 transition) and
   // from live-update listeners on every s3 input change.
   function render() {
+    // Helper: parseFloat with a fallback that treats 0 as a valid value.
+    // Using `parseFloat(x) || default` would wrongly fall back when the user enters 0.
+    const num = (id, fallback) => {
+      const v = parseFloat(document.getElementById(id).value);
+      return Number.isFinite(v) ? v : fallback;
+    };
     const inputs = {
-      margin:     parseFloat(document.getElementById('f-margin').value)     || 9.2,
-      opex:       parseFloat(document.getElementById('f-opex').value)       || 14560,
-      emissions:  parseFloat(document.getElementById('f-emissions').value)  || 3.13,
-      growth:     parseFloat(document.getElementById('f-growth').value)     || 3,
-      inflation:  parseFloat(document.getElementById('f-inflation').value)  || 2,
+      margin:     num('f-margin',    9.2),
+      opex:       num('f-opex',      14560),
+      emissions:  num('f-emissions', 3.13),
+      growth:     num('f-growth',    3),
+      inflation:  num('f-inflation', 2),
       scenario:   document.getElementById('f-scenario').value
     };
     const company = document.getElementById('f-name').value || 'your company';
@@ -1718,22 +1734,37 @@
 
     document.getElementById('r-company').textContent = company;
     const before = r[0].marginBefore;
+    const after2030 = r[1].marginAfter;
     const after2040 = r[2].marginAfter;
     const drop = (before - after2040) * 100;
 
     let headline;
-    if (after2040 < 0) {
-      headline = `Without action, your <span class="num-good">${fmtPct(before)}</span> margin becomes a <span class="num-bad">${fmtPct(after2040)}</span> loss by 2040.`;
-    } else if (drop > 1) {
-      headline = `Without action, your <span class="num-good">${fmtPct(before)}</span> margin falls to <span class="num-bad">${fmtPct(after2040)}</span> by 2040.`;
-    } else {
+    if (inputs.emissions <= 0) {
+      // Zero emissions — there's nothing for the carbon price to hit. Be honest about why.
+      headline = `With zero reported emissions, your <span class="num-good">${fmtPct(before)}</span> margin is unaffected by carbon pricing through 2040.`;
+    } else if (drop <= 1) {
+      // Margin stays effectively flat — usually only the Current Policies scenario
       headline = `Under this scenario, your margin holds near <span class="num-good">${fmtPct(after2040)}</span> through 2040 — but only because carbon prices stay low.`;
+    } else if (after2030 >= 0 && after2040 >= 0) {
+      // Both years still positive — show the trajectory in two steps
+      headline = `Without action, your <span class="num-good">${fmtPct(before)}</span> margin falls to <span class="num-bad">${fmtPct(after2030)}</span> by 2030, and <span class="num-bad">${fmtPct(after2040)}</span> by 2040.`;
+    } else if (after2030 >= 0 && after2040 < 0) {
+      // 2030 still positive, 2040 turns negative — phrasing has to flip mid-sentence
+      headline = `Without action, your <span class="num-good">${fmtPct(before)}</span> margin falls to <span class="num-bad">${fmtPct(after2030)}</span> by 2030, and becomes a <span class="num-bad">${fmtPct(after2040)}</span> loss by 2040.`;
+    } else {
+      // Both years negative — rare but possible under aggressive scenarios with thin starting margins
+      headline = `Without action, your <span class="num-good">${fmtPct(before)}</span> margin becomes a <span class="num-bad">${fmtPct(after2030)}</span> loss by 2030, deepening to <span class="num-bad">${fmtPct(after2040)}</span> by 2040.`;
     }
     document.getElementById('r-headline').innerHTML = headline;
 
     const sc = SCENARIOS[inputs.scenario];
-    document.getElementById('r-sub').innerHTML =
-      `Under ${sc.name}, you face a <strong>${fmtMoney(r[2].carbonCost)} annual carbon cost</strong> by 2040 — equivalent to a <strong>${drop.toFixed(1)}-point</strong> drop in EBIT margin.`;
+    if (inputs.emissions <= 0) {
+      document.getElementById('r-sub').innerHTML =
+        `Carbon cost depends on emissions — at zero emissions, no scenario produces a financial impact. Enter a non-zero figure to see how prices flow through to your margin.`;
+    } else {
+      document.getElementById('r-sub').innerHTML =
+        `Under ${sc.name}, you face a <strong>${fmtMoney(r[2].carbonCost)} annual carbon cost</strong> by 2040 — equivalent to a <strong>${drop.toFixed(1)}-point</strong> drop in EBIT margin.`;
+    }
 
     // Cumulative cost integrated across 2025-2040
     let cumulative = 0;
@@ -1879,7 +1910,7 @@
       g += `<circle cx="${xPos(d.year)}" cy="${yPos(d.val)}" r="${last ? 4.5 : 3.5}" fill="#c0392b" style="${sM}"/>`;
     });
 
-    // Endpoint labels (2040 only).
+    // Endpoint labels — 2040 (primary) and 2030 (midpoint, with-carbon line only).
     const lastW = series.without[series.without.length - 1];
     const lastC = series.with[series.with.length - 1];
     const yW = yPos(lastW.val);
@@ -1893,9 +1924,22 @@
     }
     const sLW = anim ? 'opacity:0; animation: ptFade 0.3s 1.3s forwards;' : '';
     const sLC = anim ? 'opacity:0; animation: ptFade 0.3s 1.4s forwards;' : '';
+    const sLM = anim ? 'opacity:0; animation: ptFade 0.3s 1.2s forwards;' : '';
     const fmtVal = (v) => opts.axisType === 'percent'
       ? (v >= 0 ? v.toFixed(1) : '−' + Math.abs(v).toFixed(1)) + '%'
       : fmtMoney(v);
+
+    // 2030 midpoint label on the with-carbon line — placed above the point on a descending line,
+    // below on an ascending one, so the label sits in clear space rather than over the line.
+    const midC = series.with[1];
+    if (midC) {
+      const isDescending = lastC.val < midC.val;   // 2040 lower than 2030?
+      const yMid = yPos(midC.val);
+      const xMid = xPos(midC.year);
+      const dyMid = isDescending ? -10 : 16;
+      g += `<text x="${xMid}" y="${yMid + dyMid}" text-anchor="middle" font-size="10.5" font-weight="600" fill="#c0392b" font-family="Inter" style="${sLM}">${fmtVal(midC.val)}</text>`;
+    }
+
     g += `<text x="${xPos(lastW.year) - 6}" y="${yW + dyW}" text-anchor="end" font-size="11" font-weight="600" fill="#122c27" font-family="Inter" opacity="0.75" style="${sLW}">${fmtVal(lastW.val)}</text>`;
     g += `<text x="${xPos(lastC.year) - 6}" y="${yC + dyC}" text-anchor="end" font-size="12" font-weight="600" fill="#c0392b" font-family="Inter" style="${sLC}">${fmtVal(lastC.val)}</text>`;
 
@@ -1980,12 +2024,14 @@
         </style>`;
       }
 
-      // Value label above the with-carbon bar (the higher one — that's the punch).
-      // Only label the 2040 group to keep the chart clean at small sizes.
-      if (i === series.without.length - 1) {
+      // Value labels above bars — 2030 (midpoint) and 2040 (endpoint).
+      // 2025 stays unlabeled as the baseline reference.
+      if (i >= 1) {
+        const isLast = i === series.without.length - 1;
+        const fontSize = isLast ? 11 : 10;
         const sLbl = anim ? `opacity:0; animation: lblFade 0.3s ${delayBase + 0.5}s forwards;` : '';
-        g += `<text x="${xC + barW/2}" y="${yC - 6}" text-anchor="middle" font-size="11" font-weight="600" fill="#c0392b" font-family="Inter" style="${sLbl}">${fmtMoney(dC.val)}</text>`;
-        g += `<text x="${xW + barW/2}" y="${yW - 6}" text-anchor="middle" font-size="11" font-weight="600" fill="#122c27" font-family="Inter" opacity="0.7" style="${sLbl}">${fmtMoney(dW.val)}</text>`;
+        g += `<text x="${xC + barW/2}" y="${yC - 6}" text-anchor="middle" font-size="${fontSize}" font-weight="600" fill="#c0392b" font-family="Inter" style="${sLbl}">${fmtMoney(dC.val)}</text>`;
+        g += `<text x="${xW + barW/2}" y="${yW - 6}" text-anchor="middle" font-size="${fontSize}" font-weight="600" fill="#122c27" font-family="Inter" opacity="0.7" style="${sLbl}">${fmtMoney(dW.val)}</text>`;
       }
     });
     if (anim) {
