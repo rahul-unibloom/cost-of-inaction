@@ -58,6 +58,8 @@
   }
   /* Combined intro+inputs screen needs more horizontal room */
   #s1.stage { max-width: 1100px; }
+  /* Verdict screen also wider for split-pane (live form on left, results on right) */
+  #s3.stage { max-width: 1100px; }
   .stage.active { display: block; }
   .stage.active > * {
     animation: fadeUp .5s cubic-bezier(.2,.7,.2,1) both;
@@ -447,7 +449,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
   }
   .verdict-header .co {
@@ -456,6 +458,48 @@
     color: var(--ink-3);
   }
   .verdict-header .co strong { color: var(--ink); font-weight: 500; }
+  .verdict-header .verdict-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 16px;
+  }
+  .btn-sm { padding: 8px 14px; font-size: 13px; }
+
+  /* Split layout: live form on left, results on right */
+  .verdict-split {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .verdict-form-pane { min-width: 0; }
+  .verdict-results-pane { min-width: 0; }
+
+  .sticky-form {
+    position: sticky;
+    top: 24px;       /* gives breathing room when embedded under a Webflow header */
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+  }
+  /* When the form is taller than the viewport, allow it to scroll independently */
+  .sticky-form::-webkit-scrollbar { width: 6px; }
+  .sticky-form::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+  .sticky-form::-webkit-scrollbar-track { background: transparent; }
+
+  .form-compact { gap: 14px; }
+  .form-compact .field { gap: 6px; }
+  .form-compact label { font-size: 12px; }
+  .form-compact .input-shell input,
+  .form-compact .input-shell select { padding: 10px 12px; font-size: 14px; }
+  .form-compact .input-shell .unit,
+  .form-compact .input-shell .prefix { padding: 0 10px; font-size: 12px; }
+  .form-title-hint {
+    font-weight: 400;
+    color: var(--ink-3);
+    font-size: 12px;
+    margin-left: 4px;
+  }
 
   .headline {
     font-size: clamp(28px, 4vw, 36px);
@@ -512,12 +556,21 @@
     margin-top: 6px;
   }
 
-  /* Two-panel cost + levers */
+  /* Two-panel charts on verdict screen */
   .panel-row {
     margin-top: 24px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 16px;
+    align-items: stretch;     /* both cards same height even if content differs */
+  }
+  .panel-row .card {
+    display: flex;
+    flex-direction: column;
+  }
+  .panel-row .card svg {
+    flex: 1 1 auto;
+    min-height: 0;
   }
   .card {
     background: var(--surface);
@@ -564,6 +617,14 @@
     border-top: 2px dashed var(--ink);
     opacity: 0.55;
   }
+  /* Bar legend swatches (for the operating-cost grouped-bar chart) */
+  .legend-swatch {
+    width: 12px; height: 12px;
+    display: inline-block;
+    border-radius: 2px;
+  }
+  .legend-swatch.swatch-neutral { background: #d1d5db; }
+  .legend-swatch.swatch-warn { background: var(--warn); }
 
   /* What this means */
   .means {
@@ -672,6 +733,38 @@
     max-width: 380px;
   }
 
+  /* Prominent CTA variant: lives right under the charts where the verdict still has heat */
+  .cta.cta-prominent {
+    background: var(--green-soft);
+    border-color: var(--green-border);
+    margin-top: 24px;
+  }
+  .cta.cta-prominent .cta-text h4 {
+    font-size: 17px;
+  }
+  .cta.cta-prominent .cta-text p {
+    color: var(--ink-2);
+    max-width: 460px;
+  }
+
+  /* Inline tail CTA — small, low-pressure exit-point link below the math */
+  .cta-tail {
+    margin-top: 28px;
+    padding: 16px 20px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--ink-2);
+    border-top: 1px solid var(--line-2);
+  }
+  .cta-tail a {
+    color: var(--cta);
+    font-weight: 500;
+    text-decoration: none;
+    margin-left: 6px;
+    transition: color .12s ease;
+  }
+  .cta-tail a:hover { color: var(--cta-2); text-decoration: underline; text-underline-offset: 3px; }
+
   .restart {
     margin-top: 24px;
     text-align: center;
@@ -687,6 +780,16 @@
   }
   .restart button:hover { color: var(--ink); }
 
+  @media (max-width: 960px) {
+    .verdict-split {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    .sticky-form {
+      position: static;
+      max-height: none;
+    }
+  }
   @media (max-width: 880px) {
     .split { grid-template-columns: 1fr; gap: 16px; }
     .split-left { order: 2; }
@@ -702,6 +805,9 @@
     .preview h3 { padding-right: 0; }
     .preview-tag { position: static; display: inline-block; margin-bottom: 8px; }
     .tip-popover { max-width: 240px; }
+    .verdict-header .verdict-actions { margin-left: 0; width: 100%; }
+    .verdict-header .verdict-actions .btn { flex: 1; justify-content: center; }
+    .verdict-header .co { width: 100%; margin-left: 0; }
   }
 
   @media print {
@@ -772,7 +878,7 @@
             <div class="field">
               <label>Company name <span class="hint">— optional</span></label>
               <div class="input-shell">
-                <input type="text" id="f-name" placeholder="e.g. Northwind Industrial" value="Northwind Industrial"/>
+                <input type="text" id="f1-name" placeholder="e.g. Northwind Industrial" value="Northwind Industrial"/>
               </div>
             </div>
 
@@ -793,7 +899,7 @@
                   <span class="hint">— 2025</span>
                 </label>
                 <div class="input-shell">
-                  <input type="number" id="f-margin" value="9.2" step="0.1" min="-50" max="60"/>
+                  <input type="number" id="f1-margin" value="9.2" step="0.1" min="-50" max="60"/>
                   <span class="unit">%</span>
                 </div>
               </div>
@@ -801,39 +907,39 @@
                 <label>Total operating cost <span class="hint">— 2025, in $M</span></label>
                 <div class="input-shell">
                   <span class="prefix">$</span>
-                  <input type="number" id="f-opex" value="14560" min="1"/>
+                  <input type="number" id="f1-opex" value="14560" min="1"/>
                   <span class="unit">million</span>
                 </div>
-                <div class="field-caption" id="opex-caption">$14,560M = $14.56B</div>
+                <div class="field-caption" id="opex-caption-1">$14,560M = $14.56B</div>
               </div>
             </div>
 
             <div class="field">
               <label>Annual emissions <span class="hint">— Scope 1 + 2 + 3</span></label>
               <div class="input-shell">
-                <input type="number" id="f-emissions" value="3.13" step="0.01" min="0.001"/>
+                <input type="number" id="f1-emissions" value="3.13" step="0.01" min="0.001"/>
                 <span class="unit">MtCO₂e</span>
               </div>
             </div>
 
-            <button class="opt-toggle" id="opt-toggle" onclick="toggleOpt()">
+            <button class="opt-toggle" id="opt-toggle-1" onclick="toggleOpt(1)">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 1L7 5L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Adjust assumptions (growth, inflation, scenario)
             </button>
 
-            <div class="opt-fields" id="opt-fields">
+            <div class="opt-fields" id="opt-fields-1">
               <div class="row-2">
                 <div class="field">
                   <label>Annual growth</label>
                   <div class="input-shell">
-                    <input type="number" id="f-growth" value="3" step="0.1"/>
+                    <input type="number" id="f1-growth" value="3" step="0.1"/>
                     <span class="unit">%/yr</span>
                   </div>
                 </div>
                 <div class="field">
                   <label>Annual inflation</label>
                   <div class="input-shell">
-                    <input type="number" id="f-inflation" value="2" step="0.1"/>
+                    <input type="number" id="f1-inflation" value="2" step="0.1"/>
                     <span class="unit">%/yr</span>
                   </div>
                 </div>
@@ -841,7 +947,7 @@
               <div class="field">
                 <label>Carbon price scenario</label>
                 <div class="input-shell">
-                  <select id="f-scenario">
+                  <select id="f1-scenario">
                     <optgroup label="Benchmark (default)">
                       <option value="aii" selected>Aii Net Zero Apparel — $543/t by 2040</option>
                     </optgroup>
@@ -873,102 +979,214 @@
     </div>
   </section>
 
-  <!-- ─── Screen 2: Verdict ─── -->
+  <!-- ─── Screen 2: Verdict (split layout: live form on left, results on right) ─── -->
   <section class="stage" id="s3">
     <div class="verdict-header">
-      <span class="badge"><span class="dot"></span>Your results</span>
+      <span class="badge"><span class="dot"></span>Live results</span>
       <span class="co">For <strong id="r-company">Northwind Industrial</strong></span>
+      <div class="verdict-actions">
+        <button class="btn btn-secondary btn-sm" id="dl-pdf-btn" onclick="exportPdf()">Download PDF</button>
+        <a class="btn btn-primary btn-sm" href="https://calendly.com/anna-sandgren/get-your-team-aligned-on-climate-targets-budget-2024?back=1&month=2026-05" target="_blank" rel="noopener">Book a call →</a>
+      </div>
     </div>
 
-    <h1 class="headline" id="r-headline">
-      Without action, your <span class="num-good">9.2%</span> margin falls to <span class="num-bad">1.3%</span> by 2040.
-    </h1>
-    <p class="verdict-sub" id="r-sub">
-      Two charts. The first shows your operating cost trajectory with and without carbon. The second shows what's left as profit.
-    </p>
+    <div class="verdict-split">
 
-    <div class="stats">
-      <div class="stat-tile">
-        <div class="stat-label">Cumulative cost</div>
-        <div class="stat-value bad" id="r-stat-1">$19B</div>
-        <div class="stat-trend">2025 → 2040</div>
-      </div>
-      <div class="stat-tile">
-        <div class="stat-label">2040 carbon price</div>
-        <div class="stat-value" id="r-stat-2">$543/t</div>
-        <div class="stat-trend" id="r-stat-2-trend">Aii Net Zero Apparel</div>
-      </div>
-      <div class="stat-tile">
-        <div class="stat-label">
-          Margin impact
-          <button class="tip" type="button" aria-label="What does pp mean?">
-            i
-            <span class="tip-popover" role="tooltip">
-              <strong>pp</strong> — percentage points. The absolute change in a percentage value. A drop from 9.2% to 1.3% is a 7.9pp drop, not a 7.9% drop.
-            </span>
-          </button>
+      <!-- LEFT: live input form -->
+      <aside class="verdict-form-pane">
+        <div class="form-card sticky-form">
+          <h4 class="form-title">Inputs <span class="form-title-hint">— change anything to update</span></h4>
+          <div class="form form-compact">
+            <div class="field">
+              <label>Company name <span class="hint">— optional</span></label>
+              <div class="input-shell">
+                <input type="text" id="f-name" placeholder="e.g. Northwind Industrial" value="Northwind Industrial"/>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>
+                EBIT margin today
+                <button class="tip" type="button" aria-label="What is EBIT margin?">
+                  i
+                  <span class="tip-popover" role="tooltip">
+                    <strong>EBIT margin</strong> — operating profit as a % of revenue, before interest and taxes. We assume it stays constant in this scenario, before carbon costs are applied.
+                    <span class="tip-row"><span>Software / SaaS</span><span>20–35%</span></span>
+                    <span class="tip-row"><span>Consumer goods</span><span>10–18%</span></span>
+                    <span class="tip-row"><span>Apparel / retail</span><span>6–12%</span></span>
+                    <span class="tip-row"><span>Heavy industry</span><span>5–10%</span></span>
+                  </span>
+                </button>
+                <span class="hint">— 2025</span>
+              </label>
+              <div class="input-shell">
+                <input type="number" id="f-margin" value="9.2" step="0.1" min="-50" max="60"/>
+                <span class="unit">%</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Total operating cost <span class="hint">— 2025, in $M</span></label>
+              <div class="input-shell">
+                <span class="prefix">$</span>
+                <input type="number" id="f-opex" value="14560" min="1"/>
+                <span class="unit">million</span>
+              </div>
+              <div class="field-caption" id="opex-caption">$14,560M = $14.56B</div>
+            </div>
+
+            <div class="field">
+              <label>Annual emissions <span class="hint">— Scope 1+2+3</span></label>
+              <div class="input-shell">
+                <input type="number" id="f-emissions" value="3.13" step="0.01" min="0.001"/>
+                <span class="unit">MtCO₂e</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Carbon price scenario</label>
+              <div class="input-shell">
+                <select id="f-scenario">
+                  <optgroup label="Benchmark (default)">
+                    <option value="aii" selected>Aii Net Zero Apparel — $543/t by 2040</option>
+                  </optgroup>
+                  <optgroup label="NGFS · core">
+                    <option value="ngfs-nz">Net Zero 2050 — $848/t by 2040</option>
+                    <option value="ngfs-b2">Below 2°C — $137/t by 2040</option>
+                    <option value="ngfs-d">Delayed Transition — $313/t by 2040</option>
+                    <option value="ngfs-c">Current Policies — $20/t by 2040</option>
+                  </optgroup>
+                  <optgroup label="NGFS · advanced">
+                    <option value="ngfs-fw">Fragmented World — $66/t by 2040</option>
+                    <option value="ngfs-ld">Low Demand — $485/t by 2040</option>
+                    <option value="ngfs-ndc">NDCs — $162/t by 2040</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+
+            <button class="opt-toggle" id="opt-toggle-3" onclick="toggleOpt(3)">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 1L7 5L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Adjust growth & inflation
+            </button>
+
+            <div class="opt-fields" id="opt-fields-3">
+              <div class="row-2">
+                <div class="field">
+                  <label>Annual growth</label>
+                  <div class="input-shell">
+                    <input type="number" id="f-growth" value="3" step="0.1"/>
+                    <span class="unit">%/yr</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Annual inflation</label>
+                  <div class="input-shell">
+                    <input type="number" id="f-inflation" value="2" step="0.1"/>
+                    <span class="unit">%/yr</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="stat-value bad" id="r-stat-3">−7.9pp</div>
-        <div class="stat-trend">EBIT margin lost</div>
-      </div>
-    </div>
+      </aside>
 
-    <div class="panel-row">
-      <div class="card">
-        <h3>Operating cost trajectory</h3>
-        <p class="card-sub">With and without carbon costs included.</p>
-        <svg id="toc-chart" viewBox="0 0 380 260" style="width: 100%; height: auto;"></svg>
-        <div class="mini-legend">
-          <span class="legend-dot"><span class="legend-line dashed"></span> Without carbon</span>
-          <span class="legend-dot"><span class="legend-line solid warn"></span> With carbon</span>
+      <!-- RIGHT: results -->
+      <div class="verdict-results-pane">
+        <h1 class="headline" id="r-headline">
+          Without action, your <span class="num-good">9.2%</span> margin falls to <span class="num-bad">1.3%</span> by 2040.
+        </h1>
+        <p class="verdict-sub" id="r-sub">
+          Two charts below show how operating cost and EBIT diverge from the unpriced baseline.
+        </p>
+
+        <div class="stats">
+          <div class="stat-tile">
+            <div class="stat-label">Cumulative cost</div>
+            <div class="stat-value bad" id="r-stat-1">$19B</div>
+            <div class="stat-trend">2025 → 2040</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-label">2040 carbon price</div>
+            <div class="stat-value" id="r-stat-2">$543/t</div>
+            <div class="stat-trend" id="r-stat-2-trend">Aii Net Zero Apparel</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-label">
+              Margin impact
+              <button class="tip" type="button" aria-label="What does pp mean?">
+                i
+                <span class="tip-popover" role="tooltip">
+                  <strong>pp</strong> — percentage points. The absolute change in a percentage value. A drop from 9.2% to 1.3% is a 7.9pp drop, not a 7.9% drop.
+                </span>
+              </button>
+            </div>
+            <div class="stat-value bad" id="r-stat-3">−7.9pp</div>
+            <div class="stat-trend">EBIT margin lost</div>
+          </div>
+        </div>
+
+        <div class="panel-row">
+          <div class="card">
+            <h3>EBIT margin trajectory</h3>
+            <p class="card-sub">Operating profit as a % of revenue, with and without carbon.</p>
+            <svg id="ebit-chart" viewBox="0 0 380 260" style="width: 100%; height: auto;"></svg>
+            <div class="mini-legend">
+              <span class="legend-dot"><span class="legend-line dashed"></span> Without carbon</span>
+              <span class="legend-dot"><span class="legend-line solid warn"></span> With carbon</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Operating cost</h3>
+            <p class="card-sub">Annual total, with and without carbon.</p>
+            <svg id="toc-chart" viewBox="0 0 380 260" style="width: 100%; height: auto;"></svg>
+            <div class="mini-legend">
+              <span class="legend-dot"><span class="legend-swatch swatch-neutral"></span> Without carbon</span>
+              <span class="legend-dot"><span class="legend-swatch swatch-warn"></span> With carbon</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cta cta-prominent">
+          <div class="cta-text">
+            <h4>Cutting that gap is what we do.</h4>
+            <p>Unibloom Switch finds lower-carbon suppliers and materials so Scope 3 stops driving this curve — without changing what you sell.</p>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <a class="btn btn-primary" href="https://calendly.com/anna-sandgren/get-your-team-aligned-on-climate-targets-budget-2024?back=1&month=2026-05" target="_blank" rel="noopener">Book a call →</a>
+          </div>
+        </div>
+
+        <div class="means">
+          <h4>What this means</h4>
+          <p>
+            The numbers above assume zero decarbonization progress between now and 2040. Under any credible 1.5°C scenario, carbon pricing becomes a non-discretionary line item — not an ESG metric. The companies that move first lock in lower costs for two decades. The ones that wait pay full freight on emissions they could have avoided.
+          </p>
+        </div>
+
+        <details class="disclosure">
+          <summary>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 1L7 5L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Show the math
+          </summary>
+          <div class="disclosure-body">
+            <table class="math" id="math-table">
+              <thead>
+                <tr><th>Line item</th><th>2025</th><th>2030</th><th>2040</th></tr>
+              </thead>
+              <tbody id="math-body"></tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="cta-tail">
+          Want to see how to flatten this curve?
+          <a href="https://calendly.com/anna-sandgren/get-your-team-aligned-on-climate-targets-budget-2024?back=1&month=2026-05" target="_blank" rel="noopener">Book a call with our team →</a>
         </div>
       </div>
-      <div class="card">
-        <h3>EBIT trajectory</h3>
-        <p class="card-sub">The profit you keep, with and without carbon.</p>
-        <svg id="ebit-chart" viewBox="0 0 380 260" style="width: 100%; height: auto;"></svg>
-        <div class="mini-legend">
-          <span class="legend-dot"><span class="legend-line dashed"></span> Without carbon</span>
-          <span class="legend-dot"><span class="legend-line solid warn"></span> With carbon</span>
-        </div>
-      </div>
-    </div>
 
-    <div class="means">
-      <h4>What this means</h4>
-      <p>
-        The numbers above assume zero decarbonization progress between now and 2040. Under any credible 1.5°C scenario, carbon pricing becomes a non-discretionary line item — not an ESG metric. The companies that move first lock in lower costs for two decades. The ones that wait pay full freight on emissions they could have avoided.
-      </p>
-    </div>
-
-    <details class="disclosure">
-      <summary>
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 1L7 5L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Show the math
-      </summary>
-      <div class="disclosure-body">
-        <table class="math" id="math-table">
-          <thead>
-            <tr><th>Line item</th><th>2025</th><th>2030</th><th>2040</th></tr>
-          </thead>
-          <tbody id="math-body"></tbody>
-        </table>
-      </div>
-    </details>
-
-    <div class="cta">
-      <div class="cta-text">
-        <h4>Cutting that gap is what we do.</h4>
-        <p>Unibloom Switch finds lower-carbon suppliers and materials so Scope 3 stops driving this curve — without changing what you sell.</p>
-      </div>
-      <div style="display:flex; gap:6px;">
-        <button class="btn btn-secondary" id="dl-pdf-btn" onclick="exportPdf()">Download PDF</button>
-        <button class="btn btn-primary">Book a call →</button>
-      </div>
-    </div>
-
-    <div class="restart">
-      <button onclick="goto(1)">← Start over with different numbers</button>
     </div>
   </section>
 
@@ -982,9 +1200,11 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function toggleOpt() {
-    document.getElementById('opt-fields').classList.toggle('open');
-    document.getElementById('opt-toggle').classList.toggle('open');
+  function toggleOpt(which) {
+    // which = 1 for screen 1, 3 for screen 3
+    const suffix = which === 3 ? '-3' : '-1';
+    document.getElementById('opt-fields' + suffix).classList.toggle('open');
+    document.getElementById('opt-toggle' + suffix).classList.toggle('open');
   }
 
   // ─── Tooltips: click-to-toggle for touch devices ───
@@ -1009,9 +1229,11 @@
   });
 
   // ─── Live converter caption for operating cost ───
-  function updateOpexCaption() {
-    const input = document.getElementById('f-opex');
-    const caption = document.getElementById('opex-caption');
+  // Generalized to work for both screen-1 (f1-opex / opex-caption-1) and screen-3 (f-opex / opex-caption)
+  function updateOpexCaption(inputId, captionId) {
+    const input = document.getElementById(inputId);
+    const caption = document.getElementById(captionId);
+    if (!input || !caption) return;
     const v = parseFloat(input.value);
 
     if (!v || v <= 0) {
@@ -1020,9 +1242,7 @@
       return;
     }
 
-    // Plausibility check: if user typed raw dollars (e.g. 7,833,000,000),
-    // the number > 100,000 in $M would be > $100B operating cost — almost
-    // certainly a mistake. Largest companies on earth are ~$400B opex.
+    // Plausibility check: > $100,000M in opex is almost certainly a units mistake.
     if (v > 100000) {
       const asMillions = v / 1e6;
       caption.innerHTML = `⚠ Looks like raw dollars — did you mean $${asMillions.toLocaleString(undefined, {maximumFractionDigits: 0})}M?`;
@@ -1039,9 +1259,12 @@
       caption.textContent = formatted;
     }
   }
-  document.getElementById('f-opex').addEventListener('input', updateOpexCaption);
-  // initialize on load
-  updateOpexCaption();
+  // Bind both screens
+  document.getElementById('f1-opex').addEventListener('input', () => updateOpexCaption('f1-opex', 'opex-caption-1'));
+  document.getElementById('f-opex').addEventListener('input', () => updateOpexCaption('f-opex', 'opex-caption'));
+  // Initialize both on load
+  updateOpexCaption('f1-opex', 'opex-caption-1');
+  updateOpexCaption('f-opex', 'opex-caption');
 
   // ─── Carbon price scenarios (from official COI model v2 / NGFS Phase 5) ───
   const SCENARIOS = {
@@ -1110,11 +1333,13 @@
   const fmtMt  = (v) => v.toFixed(2) + ' MtCO₂e';
   const fmtPrice = (v) => '$' + Math.round(v) + '/t';
 
-  // ─── Render verdict ───
-  function calculate() {
+  // ─── Render verdict from current s3 form values ───
+  // Called both from the initial calculate() (after s1→s3 transition) and
+  // from live-update listeners on every s3 input change.
+  function render() {
     const inputs = {
-      margin:     parseFloat(document.getElementById('f-margin').value)     || 9,
-      opex:       parseFloat(document.getElementById('f-opex').value)       || 7833,
+      margin:     parseFloat(document.getElementById('f-margin').value)     || 9.2,
+      opex:       parseFloat(document.getElementById('f-opex').value)       || 14560,
       emissions:  parseFloat(document.getElementById('f-emissions').value)  || 3.13,
       growth:     parseFloat(document.getElementById('f-growth').value)     || 3,
       inflation:  parseFloat(document.getElementById('f-inflation').value)  || 2,
@@ -1126,7 +1351,7 @@
     document.getElementById('r-company').textContent = company;
     const before = r[0].marginBefore;
     const after2040 = r[2].marginAfter;
-    const drop = (before - after2040) * 100; // positive number = margin decreased
+    const drop = (before - after2040) * 100;
 
     let headline;
     if (after2040 < 0) {
@@ -1140,15 +1365,13 @@
 
     const sc = SCENARIOS[inputs.scenario];
     document.getElementById('r-sub').innerHTML =
-      `Under ${sc.name}, you face a <strong>${fmtMoney(r[2].carbonCost)} annual carbon cost</strong> by 2040 — equivalent to a <strong>${drop.toFixed(1)}-point</strong> drop in EBIT margin. Two charts below show how operating cost and EBIT diverge from the unpriced baseline.`;
+      `Under ${sc.name}, you face a <strong>${fmtMoney(r[2].carbonCost)} annual carbon cost</strong> by 2040 — equivalent to a <strong>${drop.toFixed(1)}-point</strong> drop in EBIT margin.`;
 
-    // Stat tiles — integrate cumulative cost across all 16 years (2025-2040)
-    // Emissions grow linearly with business growth (per official model)
+    // Cumulative cost integrated across 2025-2040
     let cumulative = 0;
     for (let y = 2025; y <= 2040; y++) {
       const yearsFrom2025 = y - 2025;
       const emissionsY = inputs.emissions * (1 + yearsFrom2025 * inputs.growth/100);
-      // Linear interpolation of carbon price between scenario points (2025, 2030, 2040)
       let priceY;
       if (y <= 2030) {
         priceY = sc.p2025 + (sc.p2030 - sc.p2025) * (y - 2025) / 5;
@@ -1160,31 +1383,64 @@
     document.getElementById('r-stat-1').textContent = fmtMoney(cumulative);
     document.getElementById('r-stat-2').textContent = fmtPrice(sc.p2040);
     document.getElementById('r-stat-2-trend').textContent = sc.name;
-    document.getElementById('r-stat-3').textContent = '−' + drop.toFixed(1) + 'pp';
+    document.getElementById('r-stat-3').textContent = (drop >= 0 ? '−' : '+') + Math.abs(drop).toFixed(1) + 'pp';
 
     drawTrajectoryCharts(r);
     renderMath(r);
+  }
+
+  // ─── First-time calculation: copies values from screen-1 form to screen-3 form, then renders ───
+  function calculate() {
+    // Copy each field from f1-* to f-*
+    ['name', 'margin', 'opex', 'emissions', 'growth', 'inflation', 'scenario'].forEach(field => {
+      const src = document.getElementById('f1-' + field);
+      const dst = document.getElementById('f-' + field);
+      if (src && dst) dst.value = src.value;
+    });
+    // Refresh the opex caption since the value changed
+    updateOpexCaption('f-opex', 'opex-caption');
+    _firstChartRender = true;  // play entrance animation on this fresh render
+    render();
     goto(3);
   }
 
+  // ─── Live update on s3: re-render on any input change ───
+  // Debounce so heavy typing doesn't stutter; dropdown updates instantly.
+  let _renderTimer = null;
+  function scheduleRender(delay = 120) {
+    clearTimeout(_renderTimer);
+    _renderTimer = setTimeout(render, delay);
+  }
+  ['f-name', 'f-margin', 'f-opex', 'f-emissions', 'f-growth', 'f-inflation'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => scheduleRender(120));
+  });
+  document.getElementById('f-scenario').addEventListener('change', () => render()); // dropdown: instant
+
   // ─── Two-line trajectory charts (TOC and EBIT, with/without carbon) ───
+  // Animation runs on the first render only. Subsequent updates (live form changes)
+  // snap to the final state instantly so editing feels responsive, not jittery.
+  let _firstChartRender = true;
   function drawTrajectoryCharts(r) {
+    // EBIT margin trajectory — values as percentages (e.g. 0.092 → 9.2%)
+    const ebitSeries = {
+      without: r.map(d => ({ year: d.year, val: d.marginBefore * 100 })),
+      with:    r.map(d => ({ year: d.year, val: d.marginAfter * 100 }))
+    };
+    // Operating cost — dollar values, grouped bar chart
     const tocSeries = {
       without: r.map(d => ({ year: d.year, val: d.opex })),
       with:    r.map(d => ({ year: d.year, val: d.opexAfter }))
     };
-    const ebitSeries = {
-      without: r.map(d => ({ year: d.year, val: d.ebit })),
-      with:    r.map(d => ({ year: d.year, val: d.ebitAfter }))
-    };
-    drawTwoLineChart('toc-chart',  tocSeries,  { axisType: 'currency', allowNegative: false });
-    drawTwoLineChart('ebit-chart', ebitSeries, { axisType: 'currency', allowNegative: true });
+    drawTwoLineChart('ebit-chart', ebitSeries, { axisType: 'percent', allowNegative: true,  animate: _firstChartRender });
+    drawGroupedBarChart('toc-chart', tocSeries, { axisType: 'currency', animate: _firstChartRender });
+    _firstChartRender = false;
   }
 
   function drawTwoLineChart(elId, series, opts) {
     const svg = document.getElementById(elId);
     const W = 380, H = 260;
-    const padL = 60, padR = 18, padT = 24, padB = 36;
+    const padL = 60, padR = 18, padT = 24, padB = 42;
     const plotW = W - padL - padR;
     const plotH = H - padT - padB;
 
@@ -1195,7 +1451,11 @@
     // Snap max up to a "nice" round number for clean axis ticks
     const range = maxVal - minVal;
     const step = niceStep(range / 4);
-    const yMax = Math.ceil(maxVal / step) * step;
+    let yMax = Math.ceil(maxVal / step) * step;
+    // Headroom: if the highest data point lands too close to the top gridline,
+    // the endpoint label (e.g. "9.2%") overlaps the axis label (e.g. "10%").
+    // Bump yMax up one step when the data is within ~10% of the top.
+    if (yMax > 0 && (yMax - maxVal) / step < 0.35) yMax += step;
     const yMin = minVal < 0 ? Math.floor(minVal / step) * step : 0;
 
     const xs = [2025, 2030, 2040];
@@ -1224,56 +1484,150 @@
     const pathC = `M ${ptsC.join(' L ')}`;
 
     // Area fill between the two lines (representing the gap = cost of inaction)
-    // Build area: top = without-carbon line, bottom = with-carbon line, going right then back
     const areaPath = `M ${ptsW.join(' L ')} L ${[...series.with].reverse().map(d => `${xPos(d.year)},${yPos(d.val)}`).join(' L ')} Z`;
     g += `<defs><linearGradient id="grad-${elId}" x1="0" x2="0" y1="0" y2="1">
       <stop offset="0%" stop-color="#c0392b" stop-opacity="0.12"/>
       <stop offset="100%" stop-color="#c0392b" stop-opacity="0.02"/>
     </linearGradient></defs>`;
-    g += `<path d="${areaPath}" fill="url(#grad-${elId})" style="opacity:0; animation: areaFade 0.6s 0.5s forwards;"/>`;
 
-    // Without-carbon line (dashed, dark)
-    g += `<path d="${pathW}" stroke="#122c27" stroke-width="1.75" stroke-dasharray="5,4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.55" style="stroke-dashoffset: 1000; animation: drawLine 0.9s 0.1s ease-out forwards;"/>`;
-    // With-carbon line (solid, red)
-    g += `<path d="${pathC}" stroke="#c0392b" stroke-width="2.25" fill="none" stroke-linecap="round" stroke-linejoin="round" style="stroke-dashoffset: 1000; stroke-dasharray: 1000; animation: drawLine 0.9s 0.4s ease-out forwards;"/>`;
+    // Animation styles — conditionally applied. On live updates we want instant repaint.
+    const anim = opts.animate;
+    const sArea = anim ? 'opacity:0; animation: areaFade 0.6s 0.5s forwards;' : '';
+    const sLineW = anim ? 'stroke-dashoffset: 1000; animation: drawLine 0.9s 0.1s ease-out forwards;' : '';
+    const sLineC = anim ? 'stroke-dashoffset: 1000; stroke-dasharray: 1000; animation: drawLine 0.9s 0.4s ease-out forwards;' : '';
+
+    g += `<path d="${areaPath}" fill="url(#grad-${elId})" style="${sArea}"/>`;
+    g += `<path d="${pathW}" stroke="#122c27" stroke-width="1.75" stroke-dasharray="5,4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.55" style="${sLineW}"/>`;
+    g += `<path d="${pathC}" stroke="#c0392b" stroke-width="2.25" fill="none" stroke-linecap="round" stroke-linejoin="round" style="${sLineC}"/>`;
 
     // Markers
     series.without.forEach((d, i) => {
-      g += `<circle cx="${xPos(d.year)}" cy="${yPos(d.val)}" r="3" fill="white" stroke="#122c27" stroke-width="1.5" opacity="0.7" style="opacity:0; animation: ptFade 0.3s ${0.9 + i*0.05}s forwards;"/>`;
+      const sM = anim ? `opacity:0; animation: ptFade 0.3s ${0.9 + i*0.05}s forwards;` : '';
+      g += `<circle cx="${xPos(d.year)}" cy="${yPos(d.val)}" r="3" fill="white" stroke="#122c27" stroke-width="1.5" opacity="0.7" style="${sM}"/>`;
     });
     series.with.forEach((d, i) => {
       const last = i === series.with.length - 1;
-      g += `<circle cx="${xPos(d.year)}" cy="${yPos(d.val)}" r="${last ? 4.5 : 3.5}" fill="#c0392b" style="opacity:0; animation: ptFade 0.3s ${1.1 + i*0.05}s forwards;"/>`;
+      const sM = anim ? `opacity:0; animation: ptFade 0.3s ${1.1 + i*0.05}s forwards;` : '';
+      g += `<circle cx="${xPos(d.year)}" cy="${yPos(d.val)}" r="${last ? 4.5 : 3.5}" fill="#c0392b" style="${sM}"/>`;
     });
 
-    // Endpoint labels (2040 only, to keep it clean).
-    // If the two endpoints are close in y-coordinate, stagger them vertically so labels don't collide.
+    // Endpoint labels (2040 only).
     const lastW = series.without[series.without.length - 1];
     const lastC = series.with[series.with.length - 1];
     const yW = yPos(lastW.val);
     const yC = yPos(lastC.val);
-    const close = Math.abs(yW - yC) < 22;  // labels are ~14px tall; need >22px gap to avoid overlap
-    // Default: "with" goes opposite side from "without" relative to its line
-    let dyW = -8; // above
+    const close = Math.abs(yW - yC) < 22;
+    let dyW = -8;
     let dyC = lastC.val < lastW.val ? 16 : -8;
     if (close) {
-      // force one above and one below regardless
-      if (lastC.val >= lastW.val) { dyC = -10; dyW = 18; }   // with on top, without below
-      else                         { dyC = 18;  dyW = -10; } // without on top, with below
+      if (lastC.val >= lastW.val) { dyC = -10; dyW = 18; }
+      else                         { dyC = 18;  dyW = -10; }
     }
-    g += `<text x="${xPos(lastW.year) - 6}" y="${yW + dyW}" text-anchor="end" font-size="11" font-weight="600" fill="#122c27" font-family="Inter" opacity="0.75" style="opacity:0; animation: ptFade 0.3s 1.3s forwards;">${fmtMoney(lastW.val)}</text>`;
-    g += `<text x="${xPos(lastC.year) - 6}" y="${yC + dyC}" text-anchor="end" font-size="12" font-weight="600" fill="#c0392b" font-family="Inter" style="opacity:0; animation: ptFade 0.3s 1.4s forwards;">${fmtMoney(lastC.val)}</text>`;
+    const sLW = anim ? 'opacity:0; animation: ptFade 0.3s 1.3s forwards;' : '';
+    const sLC = anim ? 'opacity:0; animation: ptFade 0.3s 1.4s forwards;' : '';
+    const fmtVal = (v) => opts.axisType === 'percent'
+      ? (v >= 0 ? v.toFixed(1) : '−' + Math.abs(v).toFixed(1)) + '%'
+      : fmtMoney(v);
+    g += `<text x="${xPos(lastW.year) - 6}" y="${yW + dyW}" text-anchor="end" font-size="11" font-weight="600" fill="#122c27" font-family="Inter" opacity="0.75" style="${sLW}">${fmtVal(lastW.val)}</text>`;
+    g += `<text x="${xPos(lastC.year) - 6}" y="${yC + dyC}" text-anchor="end" font-size="12" font-weight="600" fill="#c0392b" font-family="Inter" style="${sLC}">${fmtVal(lastC.val)}</text>`;
 
-    g += `<style>
-      @keyframes drawLine { to { stroke-dashoffset: 0; } }
-      @keyframes areaFade { to { opacity: 1; } }
-      @keyframes ptFade   { to { opacity: 1; } }
-    </style>`;
+    if (anim) {
+      g += `<style>
+        @keyframes drawLine { to { stroke-dashoffset: 0; } }
+        @keyframes areaFade { to { opacity: 1; } }
+        @keyframes ptFade   { to { opacity: 1; } }
+      </style>`;
+    }
 
     svg.innerHTML = g;
   }
 
   // Pick a "nice" axis step (1, 2, 2.5, 5, 10 × 10^n)
+  // ─── Grouped bar chart (used for operating cost: side-by-side bars per year) ───
+  function drawGroupedBarChart(elId, series, opts) {
+    const svg = document.getElementById(elId);
+    const W = 380, H = 260;
+    const padL = 60, padR = 18, padT = 24, padB = 42;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    // y-axis range (bars start at 0, grow upward)
+    const allVals = [...series.without.map(d => d.val), ...series.with.map(d => d.val)];
+    const maxVal = Math.max(...allVals);
+    const range = maxVal;
+    const step = niceStep(range / 4);
+    let yMax = Math.ceil(maxVal / step) * step;
+    // Headroom for value labels above the top of bars
+    if (yMax > 0 && (yMax - maxVal) / step < 0.35) yMax += step;
+    const yMin = 0;
+    const yPos = v => padT + (1 - (v - yMin) / (yMax - yMin)) * plotH;
+
+    // Bar geometry: 3 year groups, 2 bars per group
+    const nGroups = series.without.length;     // 3 (years)
+    const groupSpacing = plotW / nGroups;       // width allocated per year
+    const barGap = 4;                           // gap between the two bars in a group
+    const groupOuterPad = 18;                   // gap between groups
+    const barW = (groupSpacing - groupOuterPad - barGap) / 2;
+    const xPos = (yearIdx) => padL + yearIdx * groupSpacing + groupOuterPad / 2;
+
+    let g = '';
+
+    // Gridlines & y-axis labels
+    for (let v = yMin; v <= yMax + 0.0001; v += step) {
+      const y = yPos(v);
+      const isZero = v === 0;
+      g += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${isZero ? '#122c27' : '#ececec'}" stroke-width="1" ${isZero ? 'opacity="0.4"' : ''}/>`;
+      g += `<text x="${padL-8}" y="${y+3}" text-anchor="end" font-size="10" fill="#758696" font-family="Inter">${fmtAxis(v, opts.axisType)}</text>`;
+    }
+
+    // Year labels (x-axis)
+    series.without.forEach((d, i) => {
+      const groupCenter = xPos(i) + barW + barGap / 2;
+      g += `<text x="${groupCenter}" y="${H - padB + 18}" text-anchor="middle" font-size="11" fill="#2b6054" font-family="Inter">${d.year}</text>`;
+    });
+
+    // Bars: for each year group, draw without-carbon (light grey) then with-carbon (red) side by side
+    const anim = opts.animate;
+    series.without.forEach((dW, i) => {
+      const dC = series.with[i];
+      const xW = xPos(i);
+      const xC = xW + barW + barGap;
+      const yW = yPos(dW.val);
+      const yC = yPos(dC.val);
+      const hW = plotH - (yW - padT);
+      const hC = plotH - (yC - padT);
+
+      // Animation: each bar grows from baseline up
+      const delayBase = 0.15 + i * 0.10;
+      const sBarW = anim ? `transform-origin: ${xW + barW/2}px ${padT + plotH}px; opacity: 0; animation: barGrow${i}W 0.55s ${delayBase}s cubic-bezier(.2,.7,.2,1) forwards;` : '';
+      const sBarC = anim ? `transform-origin: ${xC + barW/2}px ${padT + plotH}px; opacity: 0; animation: barGrow${i}C 0.55s ${delayBase + 0.08}s cubic-bezier(.2,.7,.2,1) forwards;` : '';
+
+      g += `<rect x="${xW}" y="${yW}" width="${barW}" height="${hW}" rx="2" fill="#d1d5db" style="${sBarW}"/>`;
+      g += `<rect x="${xC}" y="${yC}" width="${barW}" height="${hC}" rx="2" fill="#c0392b" style="${sBarC}"/>`;
+
+      if (anim) {
+        g += `<style>
+          @keyframes barGrow${i}W { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+          @keyframes barGrow${i}C { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+        </style>`;
+      }
+
+      // Value label above the with-carbon bar (the higher one — that's the punch).
+      // Only label the 2040 group to keep the chart clean at small sizes.
+      if (i === series.without.length - 1) {
+        const sLbl = anim ? `opacity:0; animation: lblFade 0.3s ${delayBase + 0.5}s forwards;` : '';
+        g += `<text x="${xC + barW/2}" y="${yC - 6}" text-anchor="middle" font-size="11" font-weight="600" fill="#c0392b" font-family="Inter" style="${sLbl}">${fmtMoney(dC.val)}</text>`;
+        g += `<text x="${xW + barW/2}" y="${yW - 6}" text-anchor="middle" font-size="11" font-weight="600" fill="#122c27" font-family="Inter" opacity="0.7" style="${sLbl}">${fmtMoney(dW.val)}</text>`;
+      }
+    });
+    if (anim) {
+      g += `<style>@keyframes lblFade { to { opacity: 1; } }</style>`;
+    }
+
+    svg.innerHTML = g;
+  }
+
+
   function niceStep(rough) {
     if (rough <= 0) return 1;
     const exp = Math.floor(Math.log10(rough));
@@ -1293,6 +1647,14 @@
       const sign = v < 0 ? '−' : '';
       if (abs >= 1000) return sign + '$' + (abs/1000).toFixed(abs/1000 >= 10 ? 0 : 1) + 'B';
       return sign + '$' + Math.round(abs) + 'M';
+    }
+    if (type === 'percent') {
+      // v already in percentage units (e.g. 9.2 not 0.092)
+      const abs = Math.abs(v);
+      const sign = v < 0 ? '−' : '';
+      // Show 1 decimal when it's needed (e.g. 2.5%, 7.5%); otherwise integer
+      const isInteger = Math.abs(abs - Math.round(abs)) < 0.05;
+      return sign + (isInteger ? Math.round(abs).toString() : abs.toFixed(1)) + '%';
     }
     return v.toString();
   }
@@ -1426,11 +1788,13 @@
         await document.fonts.ready;
       }
 
-      const target = document.getElementById('s3');
+      // Capture ONLY the results pane (not the input form on the left).
+      // The form is interactive context — it doesn't belong in a printed report.
+      // Fall back to #s3 in case the layout changes; the cloned form will be hidden anyway.
+      const target = document.querySelector('.verdict-results-pane') || document.getElementById('s3');
       if (!target) throw new Error('Verdict section not found');
 
       // Clone the node off-screen, freeze its animations, capture it.
-      // Cloning means we don't disturb the live page.
       const clone = target.cloneNode(true);
       const wrap = document.createElement('div');
       wrap.style.cssText = 'position:fixed;left:-10000px;top:0;width:760px;background:#fafaf9;padding:32px;';
@@ -1438,11 +1802,14 @@
       document.body.appendChild(wrap);
 
       // Hide elements that don't belong in a printed report:
-      //   - CTA block (interactive only)
-      //   - Restart link
-      //   - Disclosure (math table, kept tight)
+      //   - CTA blocks and tail link (sales surface, not appropriate for a forwarded report)
+      //   - Disclosure (math table, kept tight to one page)
       //   - Tooltip trigger icons (no value when you can't tap them)
-      clone.querySelectorAll('.cta, .restart, details.disclosure, .tip').forEach(el => el.style.display = 'none');
+      clone.querySelectorAll('.cta, .cta-tail, details.disclosure, .tip').forEach(el => el.style.display = 'none');
+      // Force the panel-row charts to side-by-side in the PDF too, since the wrap is wide enough
+      clone.querySelectorAll('.panel-row').forEach(el => {
+        el.style.gridTemplateColumns = '1fr 1fr';
+      });
       // Snap any animated elements to final state
       freezeAnimations(clone);
 
