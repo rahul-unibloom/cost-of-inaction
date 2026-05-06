@@ -489,16 +489,17 @@
   }
   .verdict-form-pane {
     min-width: 0;
-    /* The whole pane is sticky — form card + jump links scroll together */
-    position: sticky;
-    top: 24px;       /* breathing room when embedded under a Webflow header */
-    align-self: start;   /* required for sticky inside a grid; without it the pane stretches */
+    /* Form pane stays static (not sticky). Sticky positioning is unreliable inside
+       Webflow embeds because Webflow's body often has `overflow-x: hidden` which
+       creates an unexpected scroll container, causing scroll glitches. The form is
+       still accessible — it's the top-left of the verdict; users scroll up to it
+       when they want to change inputs. Worth the tradeoff for stable scrolling. */
   }
   .verdict-results-pane { min-width: 0; }
 
   .sticky-form {
-    /* No longer needs sticky positioning — the parent .verdict-form-pane handles that.
-       Class kept for any consumers expecting it; safe to remove later. */
+    /* Reserved for future use. Kept as a no-op class to avoid breaking any
+       consumer expecting it. */
   }
 
   .form-compact { gap: 14px; }
@@ -1020,9 +1021,6 @@
     .verdict-split {
       grid-template-columns: 1fr;
       gap: 18px;
-    }
-    .verdict-form-pane {
-      position: static;
     }
   }
   @media (max-width: 880px) {
@@ -1561,7 +1559,12 @@
   function goto(n) {
     document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
     document.getElementById('s' + n).classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll the new screen's top into view. Use scrollIntoView on the active stage
+    // rather than window.scrollTo(0,0) — the latter scrolls the *parent page* when
+    // we're inside a Webflow embed, which causes weird jumps past the Webflow nav.
+    // scrollIntoView walks the actual ancestor chain and scrolls the right container.
+    const stage = document.getElementById('s' + n);
+    if (stage) stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function toggleOpt(which) {
