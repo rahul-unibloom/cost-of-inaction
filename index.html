@@ -173,9 +173,12 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-    align-items: start;
+    align-items: stretch;
   }
-  .split-left, .split-right { min-width: 0; }
+  .split-left, .split-right { min-width: 0; display: flex; }
+  /* The inner cards (.preview and .form-card) fill their cell so both columns share height. */
+  .split-left > .preview,
+  .split-right > .form-card { width: 100%; }
 
   .preview {
     padding: 24px 24px 18px;
@@ -207,6 +210,40 @@
     font-size: 13px;
     margin-bottom: 14px;
     line-height: 1.5;
+  }
+  /* Caption block at the bottom of the example chart card — adds context and balances
+     visual weight against the (taller) form card on the right. */
+  .preview-caption {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line-2);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .caption-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .caption-dot {
+    width: 18px; height: 2px;
+    flex-shrink: 0;
+  }
+  .caption-dot.solid { background: var(--warn); }
+  .caption-dot.dashed {
+    background: transparent;
+    border-top: 2px dashed var(--ink);
+    opacity: 0.55;
+  }
+  .caption-note {
+    margin-top: 6px;
+    margin-bottom: 0 !important;
+    font-size: 12px !important;
+    color: var(--ink-3) !important;
+    line-height: 1.5 !important;
   }
 
   .form-card {
@@ -1061,7 +1098,7 @@
       <span class="badge solid"><span class="dot"></span>A 60-second model</span>
       <h1>See what carbon pricing does to your <span class="accent">margins</span>.</h1>
       <p class="lede">
-        Three numbers about your business. We'll show you the EBIT margin you're on track to lose by 2040 — and the cheapest ways to keep it.
+        Three numbers about your business. We'll show you the EBIT margin you're on track to lose by 2030 and 2040 — and the cheapest ways to keep it.
       </p>
     </div>
 
@@ -1087,19 +1124,28 @@
             <text x="50" y="94" text-anchor="end" font-size="10" fill="#758696" font-family="Inter">5%</text>
             <text x="50" y="144" text-anchor="end" font-size="10" fill="#758696" font-family="Inter">0%</text>
             <text x="50" y="194" text-anchor="end" font-size="10" fill="#758696" font-family="Inter">−5%</text>
+            <!-- X-axis labels: linear time positions. 2025 at x=60, 2040 at x=620.
+                 2030 sits at 60 + (5/15)*560 = ~247 — closer to 2025 because only 5 of 15 years have passed. -->
             <text x="60" y="212" font-size="10" fill="#758696" font-family="Inter">2025</text>
-            <text x="340" y="212" font-size="10" fill="#758696" font-family="Inter" text-anchor="middle">2030</text>
+            <text x="247" y="212" font-size="10" fill="#758696" font-family="Inter" text-anchor="middle">2030</text>
             <text x="620" y="212" font-size="10" fill="#758696" font-family="Inter" text-anchor="end">2040</text>
             <line x1="60" y1="50" x2="620" y2="50" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.4"/>
-            <path d="M 60 50 L 340 105 L 620 197 L 620 50 Z" fill="url(#fillGrad)"/>
-            <path d="M 60 50 L 340 105 L 620 197" stroke="#122c27" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 60 50 L 247 105 L 620 197 L 620 50 Z" fill="url(#fillGrad)"/>
+            <path d="M 60 50 L 247 105 L 620 197" stroke="#122c27" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="60"  cy="50"  r="3.5" fill="#122c27"/>
-            <circle cx="340" cy="105" r="3.5" fill="#122c27"/>
+            <circle cx="247" cy="105" r="3.5" fill="#122c27"/>
             <circle cx="620" cy="197" r="4.5" fill="#c0392b"/>
             <text x="72"  y="44"  font-size="11" fill="#16a34a" font-family="Inter" font-weight="600">9.0%</text>
-            <text x="340" y="98"  font-size="11" fill="#122c27" font-family="Inter" font-weight="600" text-anchor="middle">2.4%</text>
+            <text x="247" y="98"  font-size="11" fill="#122c27" font-family="Inter" font-weight="600" text-anchor="middle">2.4%</text>
             <text x="615" y="190" font-size="12" fill="#c0392b" font-family="Inter" font-weight="600" text-anchor="end">−5.7%</text>
           </svg>
+
+          <!-- Caption fills the lower half of the card so it doesn't look top-heavy next to the form -->
+          <div class="preview-caption">
+            <p class="caption-note">
+              The dashed line at the top is the unpriced baseline — what your margin would be without carbon costs. The descending line shows the trajectory once carbon costs are applied. Each scenario produces a different curve: NGFS Net Zero 2050 is steepest; Current Policies barely moves.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -1181,11 +1227,8 @@
                 <label>Carbon price scenario</label>
                 <div class="input-shell">
                   <select id="f1-scenario">
-                    <optgroup label="Benchmark (default)">
-                      <option value="aii" selected>Aii Net Zero Apparel — $543/t by 2040</option>
-                    </optgroup>
                     <optgroup label="NGFS · core">
-                      <option value="ngfs-nz">Net Zero 2050 — $848/t by 2040</option>
+                      <option value="ngfs-nz" selected>Net Zero 2050 — $848/t by 2040</option>
                       <option value="ngfs-b2">Below 2°C — $137/t by 2040</option>
                       <option value="ngfs-d">Delayed Transition — $313/t by 2040</option>
                       <option value="ngfs-c">Current Policies — $20/t by 2040</option>
@@ -1194,6 +1237,9 @@
                       <option value="ngfs-fw">Fragmented World — $66/t by 2040</option>
                       <option value="ngfs-ld">Low Demand — $485/t by 2040</option>
                       <option value="ngfs-ndc">NDCs — $162/t by 2040</option>
+                    </optgroup>
+                    <optgroup label="Sector-specific">
+                      <option value="aii">Aii Net Zero Apparel — $543/t by 2040</option>
                     </optgroup>
                   </select>
                 </div>
@@ -1204,7 +1250,7 @@
 
             <div class="scenario-note">
               <span class="pulse"></span>
-              Defaulting to the Aii Net Zero Apparel Benchmark. All inputs stay in your browser.
+              Defaulting to NGFS Net Zero 2050. All inputs stay in your browser.
             </div>
           </div>
         </div>
@@ -1280,11 +1326,8 @@
               <label>Carbon price scenario</label>
               <div class="input-shell">
                 <select id="f-scenario">
-                  <optgroup label="Benchmark (default)">
-                    <option value="aii" selected>Aii Net Zero Apparel — $543/t by 2040</option>
-                  </optgroup>
                   <optgroup label="NGFS · core">
-                    <option value="ngfs-nz">Net Zero 2050 — $848/t by 2040</option>
+                    <option value="ngfs-nz" selected>Net Zero 2050 — $848/t by 2040</option>
                     <option value="ngfs-b2">Below 2°C — $137/t by 2040</option>
                     <option value="ngfs-d">Delayed Transition — $313/t by 2040</option>
                     <option value="ngfs-c">Current Policies — $20/t by 2040</option>
@@ -1293,6 +1336,9 @@
                     <option value="ngfs-fw">Fragmented World — $66/t by 2040</option>
                     <option value="ngfs-ld">Low Demand — $485/t by 2040</option>
                     <option value="ngfs-ndc">NDCs — $162/t by 2040</option>
+                  </optgroup>
+                  <optgroup label="Sector-specific">
+                    <option value="aii">Aii Net Zero Apparel — $543/t by 2040</option>
                   </optgroup>
                 </select>
               </div>
@@ -1354,7 +1400,7 @@
       <!-- RIGHT: results -->
       <div class="verdict-results-pane">
         <h1 class="headline" id="r-headline">
-          Without action, your <span class="num-good">9.2%</span> margin falls to <span class="num-bad">5.7%</span> by 2030, and <span class="num-bad">1.3%</span> by 2040.
+          Without action, your <span class="num-good">9.2%</span> margin falls to <span class="num-bad">4.0%</span> by 2030, and becomes a <span class="num-bad">−3.1%</span> loss by 2040.
         </h1>
         <p class="verdict-sub" id="r-sub">
           Two charts below show how operating cost and EBIT diverge from the unpriced baseline.
@@ -1363,13 +1409,13 @@
         <div class="stats">
           <div class="stat-tile">
             <div class="stat-label">Cumulative cost</div>
-            <div class="stat-value bad" id="r-stat-1">$19B</div>
+            <div class="stat-value bad" id="r-stat-1">$28B</div>
             <div class="stat-trend">2025 → 2040</div>
           </div>
           <div class="stat-tile">
             <div class="stat-label">2040 carbon price</div>
-            <div class="stat-value" id="r-stat-2">$543/t</div>
-            <div class="stat-trend" id="r-stat-2-trend">Aii Net Zero Apparel</div>
+            <div class="stat-value" id="r-stat-2">$848/t</div>
+            <div class="stat-trend" id="r-stat-2-trend">NGFS Net Zero 2050</div>
           </div>
           <div class="stat-tile">
             <div class="stat-label">
@@ -1377,11 +1423,11 @@
               <button class="tip" type="button" aria-label="What does pp mean?">
                 i
                 <span class="tip-popover" role="tooltip">
-                  <strong>pp</strong> — percentage points. The absolute change in a percentage value. A drop from 9.2% to 1.3% is a 7.9pp drop, not a 7.9% drop.
+                  <strong>pp</strong> — percentage points. The absolute change in a percentage value. A drop from 9.2% to −3.1% is a 12.3pp drop, not a 12.3% drop.
                 </span>
               </button>
             </div>
-            <div class="stat-value bad" id="r-stat-3">−7.9pp</div>
+            <div class="stat-value bad" id="r-stat-3">−12.3pp</div>
             <div class="stat-trend">EBIT margin lost</div>
           </div>
         </div>
