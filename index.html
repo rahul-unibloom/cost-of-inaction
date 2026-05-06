@@ -35,7 +35,11 @@
     --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
+  /* Use min-height not height so the body sizes to content. Setting `height: 100%` on body
+     can cause scroll glitches with sticky positioning — the viewport thinks the body has
+     "nowhere to scroll" because it's exactly viewport-tall, leading to a momentum hiccup
+     where the user has to scroll twice to reach the actual page bottom. */
+  html, body { min-height: 100%; }
   body {
     background: var(--bg-2);
     color: var(--ink);
@@ -2247,6 +2251,7 @@
       const margin = 14;
 
       const meta = getReportMeta();
+      const UNIBLOOM_URL = 'https://unibloom.world';
 
       // ─── Header: logo + wordmark on the left, report title + meta on the right ───
       const logoSize = 11;     // mm; matches a 32-36pt logo at 300dpi
@@ -2259,6 +2264,10 @@
       pdf.setFontSize(13);
       pdf.setTextColor(43, 96, 84);    // --green / --ink-2 (#2b6054)
       pdf.text('Unibloom', logoX + logoSize + 2.5, logoY + logoSize / 2 + 1.5);
+
+      // Make the whole logo + wordmark cluster clickable → unibloom.world.
+      // jsPDF's link() takes (x, y, w, h, options). Width covers logo + small gap + ~22mm wordmark.
+      pdf.link(logoX, logoY, logoSize + 2.5 + 22, logoSize, { url: UNIBLOOM_URL });
 
       // Report title — right-aligned, dark green
       pdf.setFont('helvetica', 'bold');
@@ -2297,9 +2306,14 @@
       pdf.setFontSize(8);
       pdf.setTextColor(117, 134, 150); // --ink-3
       pdf.text('Unibloom  ·  Climate transition planning for procurement & sustainability teams', margin, footerY);
-      // Right-aligned URL
-      pdf.setTextColor(170, 170, 170);
-      pdf.text('unibloom.world', pageW - margin, footerY, { align: 'right' });
+      // Right-aligned URL — colored as a link and with a clickable region over it
+      pdf.setTextColor(43, 96, 84); // --green so it reads as a link
+      const urlText = 'unibloom.world';
+      pdf.text(urlText, pageW - margin, footerY, { align: 'right' });
+      // Approximate clickable region: text width depends on font, but at 8pt helvetica
+      // 'unibloom.world' is roughly 22mm. Add a small vertical pad so the region is easier to click.
+      const urlWidth = 22;
+      pdf.link(pageW - margin - urlWidth, footerY - 3, urlWidth, 5, { url: UNIBLOOM_URL });
 
       const filename = `risk-of-inaction-${slugify(meta.company) || 'report'}.pdf`;
       pdf.save(filename);
