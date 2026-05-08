@@ -441,6 +441,38 @@
   }
   .input-shell .unit { border-left: 1px solid var(--line); }
   .input-shell .prefix { border-right: 1px solid var(--line); }
+  /* Interactive unit picker — replaces the static .unit span. Styled to look
+     like the static slot but with a chevron and hover state. */
+  .input-shell .unit-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: 0;
+    border-left: 1px solid var(--line);
+    background-color: var(--bg-2);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 10 10'%3E%3Cpath d='M2 4l3 3 3-3' stroke='%23758696' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    font: inherit;
+    font-size: 13px;
+    color: var(--ink-2);
+    padding: 0 26px 0 12px;
+    cursor: pointer;
+    transition: background-color .12s ease, color .12s ease;
+    /* Match input height for clean alignment */
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+  }
+  .input-shell .unit-select:hover {
+    background-color: var(--surface);
+    color: var(--ink);
+  }
+  .input-shell .unit-select:focus {
+    outline: 2px solid var(--green-2);
+    outline-offset: -2px;
+    color: var(--ink);
+  }
   .row-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1183,11 +1215,16 @@
                 </div>
               </div>
               <div class="field">
-                <label>Total operating cost <span class="hint">— 2025, in $M</span></label>
+                <label>Total operating cost <span class="hint">— 2025</span></label>
                 <div class="input-shell">
                   <span class="prefix">$</span>
-                  <input type="number" id="f1-opex" value="14560" min="1"/>
-                  <span class="unit">million</span>
+                  <input type="number" id="f1-opex" value="14560" min="0"/>
+                  <select class="unit unit-select" id="f1-opex-unit" aria-label="Operating cost unit">
+                    <option value="usd">USD</option>
+                    <option value="usd-k">USD k</option>
+                    <option value="usd-m" selected>USD M</option>
+                    <option value="usd-bn">USD bn</option>
+                  </select>
                 </div>
                 <div class="field-caption" id="opex-caption-1">$14,560M = $14.56B</div>
               </div>
@@ -1197,7 +1234,12 @@
               <label>Annual emissions <span class="hint">— Scope 1 + 2 + 3</span></label>
               <div class="input-shell">
                 <input type="number" id="f1-emissions" value="3.13" step="0.01" min="0"/>
-                <span class="unit">MtCO₂e</span>
+                <select class="unit unit-select" id="f1-emissions-unit" aria-label="Emissions unit">
+                  <option value="kg">kgCO₂e</option>
+                  <option value="t">tCO₂e</option>
+                  <option value="kt">ktCO₂e</option>
+                  <option value="mt" selected>MtCO₂e</option>
+                </select>
               </div>
             </div>
 
@@ -1305,11 +1347,16 @@
             </div>
 
             <div class="field">
-              <label>Total operating cost <span class="hint">— 2025, in $M</span></label>
+              <label>Total operating cost <span class="hint">— 2025</span></label>
               <div class="input-shell">
                 <span class="prefix">$</span>
-                <input type="number" id="f-opex" value="14560" min="1"/>
-                <span class="unit">million</span>
+                <input type="number" id="f-opex" value="14560" min="0"/>
+                <select class="unit unit-select" id="f-opex-unit" aria-label="Operating cost unit">
+                  <option value="usd">USD</option>
+                  <option value="usd-k">USD k</option>
+                  <option value="usd-m" selected>USD M</option>
+                  <option value="usd-bn">USD bn</option>
+                </select>
               </div>
               <div class="field-caption" id="opex-caption">$14,560M = $14.56B</div>
             </div>
@@ -1318,7 +1365,12 @@
               <label>Annual emissions <span class="hint">— Scope 1+2+3</span></label>
               <div class="input-shell">
                 <input type="number" id="f-emissions" value="3.13" step="0.01" min="0"/>
-                <span class="unit">MtCO₂e</span>
+                <select class="unit unit-select" id="f-emissions-unit" aria-label="Emissions unit">
+                  <option value="kg">kgCO₂e</option>
+                  <option value="t">tCO₂e</option>
+                  <option value="kt">ktCO₂e</option>
+                  <option value="mt" selected>MtCO₂e</option>
+                </select>
               </div>
             </div>
 
@@ -1467,7 +1519,7 @@
         <div class="means" id="r-means">
           <h4>What this means</h4>
           <p>
-            These results estimate the financial impact of carbon costs under the selected scenario. They assume the company absorbs carbon costs and does not reduce emissions intensity over time. Actual impact can be reduced through various initiatives including supplier decarbonisation, cleaner energy and operational efficiency. Companies that fail to reduce emissions exposure may face higher costs, lower margins, and reduced competitiveness.
+            The numbers above assume zero decarbonization progress between now and 2040. Under any credible 1.5°C scenario, carbon pricing becomes a non-discretionary line item — not an ESG metric. The companies that move first lock in lower costs for two decades. The ones that wait pay full freight on emissions they could have avoided.
           </p>
         </div>
 
@@ -1661,41 +1713,90 @@
 
   // ─── Live converter caption for operating cost ───
   // Generalized to work for both screen-1 (f1-opex / opex-caption-1) and screen-3 (f-opex / opex-caption)
-  function updateOpexCaption(inputId, captionId) {
+
+  // ─── Unit conversion: read user input, convert to canonical units ($M and Mt) ───
+  // The model internally always works in $M (millions of USD) and MtCO2e (megatonnes).
+  // Users can type in different units; we convert at read time, the rest of the math is unchanged.
+  const OPEX_TO_M = {            // multiply user value by this to get $M
+    'usd':    1e-6,              // $ → $M
+    'usd-k':  1e-3,              // $k → $M
+    'usd-m':  1,                 // $M → $M (no-op, default)
+    'usd-bn': 1e3                // $bn → $M
+  };
+  const EMISSIONS_TO_MT = {      // multiply user value by this to get MtCO2e
+    'kg': 1e-9,                  // kg → t → kt → Mt = ÷ 1,000,000,000
+    't':  1e-6,                  // t → Mt = ÷ 1,000,000
+    'kt': 1e-3,                  // kt → Mt = ÷ 1,000
+    'mt': 1                      // Mt → Mt (no-op, default)
+  };
+  function readOpexAsM(inputId, unitId) {
+    const v = parseFloat(document.getElementById(inputId).value);
+    if (!Number.isFinite(v)) return null;
+    const unitEl = document.getElementById(unitId);
+    const unit = (unitEl && unitEl.value) || 'usd-m';
+    const factor = OPEX_TO_M[unit] || 1;
+    return v * factor;
+  }
+  function readEmissionsAsMt(inputId, unitId) {
+    const v = parseFloat(document.getElementById(inputId).value);
+    if (!Number.isFinite(v)) return null;
+    const unitEl = document.getElementById(unitId);
+    const unit = (unitEl && unitEl.value) || 'mt';
+    const factor = EMISSIONS_TO_MT[unit] || 1;
+    return v * factor;
+  }
+
+  function updateOpexCaption(inputId, captionId, unitId) {
     const input = document.getElementById(inputId);
     const caption = document.getElementById(captionId);
     if (!input || !caption) return;
     const v = parseFloat(input.value);
 
-    if (!v || v <= 0) {
+    if (!Number.isFinite(v) || v <= 0) {
       caption.textContent = '';
       caption.classList.remove('warn');
       return;
     }
 
-    // Plausibility check: > $100,000M in opex is almost certainly a units mistake.
-    if (v > 100000) {
-      const asMillions = v / 1e6;
-      caption.innerHTML = `⚠ Looks like raw dollars — did you mean $${asMillions.toLocaleString(undefined, {maximumFractionDigits: 0})}M?`;
+    // Compute canonical $M (after unit conversion) for the warning + display.
+    const unitEl = unitId ? document.getElementById(unitId) : null;
+    const unit = (unitEl && unitEl.value) || 'usd-m';
+    const asM = v * (OPEX_TO_M[unit] || 1);
+
+    // Plausibility check: more than $10T (10,000,000 in $M) for a single company is implausible.
+    // This catches unit mismatches like "1500" left in a USD bn slot when the user meant USD M.
+    if (asM > 10_000_000) {
+      caption.innerHTML = `⚠ This is over $10 trillion. Did you pick the right unit?`;
       caption.classList.add('warn');
       return;
     }
 
     caption.classList.remove('warn');
-    const formatted = '$' + v.toLocaleString(undefined, {maximumFractionDigits: 0}) + 'M';
-    if (v >= 1000) {
-      const inB = (v / 1000).toFixed(v/1000 >= 10 ? 1 : (v/1000 >= 1.05 ? 2 : 1));
-      caption.textContent = `${formatted} = $${inB}B`;
+
+    // Format: always show the canonical $M figure, plus a friendly secondary rep when useful.
+    const formattedM = '$' + asM.toLocaleString(undefined, {maximumFractionDigits: asM < 10 ? 2 : 0}) + 'M';
+    if (asM >= 1000) {
+      const billions = asM / 1000;
+      // Below $10B: show 2 decimals ($14.56B). $10B-$100B: 1 decimal ($14.6B). $100B+: 0 decimals.
+      const decimals = billions < 10 ? 2 : (billions < 100 ? 1 : 0);
+      const inB = billions.toFixed(decimals);
+      caption.textContent = `${formattedM} = $${inB}B`;
+    } else if (asM < 1) {
+      // Sub-million amounts — express in thousands too
+      const inK = (asM * 1000).toFixed(0);
+      caption.textContent = `${formattedM} = $${inK}k`;
     } else {
-      caption.textContent = formatted;
+      caption.textContent = formattedM;
     }
   }
-  // Bind both screens
-  document.getElementById('f1-opex').addEventListener('input', () => updateOpexCaption('f1-opex', 'opex-caption-1'));
-  document.getElementById('f-opex').addEventListener('input', () => updateOpexCaption('f-opex', 'opex-caption'));
+  // Bind both screens — both the value input *and* the unit selector trigger an update
+  document.getElementById('f1-opex').addEventListener('input', () => updateOpexCaption('f1-opex', 'opex-caption-1', 'f1-opex-unit'));
+  document.getElementById('f-opex').addEventListener('input', () => updateOpexCaption('f-opex', 'opex-caption', 'f-opex-unit'));
+  document.getElementById('f1-opex-unit').addEventListener('change', () => updateOpexCaption('f1-opex', 'opex-caption-1', 'f1-opex-unit'));
+  document.getElementById('f-opex-unit').addEventListener('change', () => updateOpexCaption('f-opex', 'opex-caption', 'f-opex-unit'));
   // Initialize both on load
-  updateOpexCaption('f1-opex', 'opex-caption-1');
-  updateOpexCaption('f-opex', 'opex-caption');
+  updateOpexCaption('f1-opex', 'opex-caption-1', 'f1-opex-unit');
+  updateOpexCaption('f-opex', 'opex-caption', 'f-opex-unit');
 
   // ─── Carbon price scenarios (from official COI model v2 / NGFS Phase 5) ───
   const SCENARIOS = {
@@ -1774,10 +1875,15 @@
       const v = parseFloat(document.getElementById(id).value);
       return Number.isFinite(v) ? v : fallback;
     };
+    // For opex and emissions, the unit picker means we read the raw value AND the
+    // selected unit, then convert to canonical units ($M and Mt). Everything
+    // downstream still works in $M / Mt — conversion happens once, at the boundary.
+    const opexAsM = readOpexAsM('f-opex', 'f-opex-unit');
+    const emissionsAsMt = readEmissionsAsMt('f-emissions', 'f-emissions-unit');
     const inputs = {
       margin:     num('f-margin',    9.2),
-      opex:       num('f-opex',      14560),
-      emissions:  num('f-emissions', 3.13),
+      opex:       opexAsM != null ? opexAsM : 14560,        // canonical: $M
+      emissions:  emissionsAsMt != null ? emissionsAsMt : 3.13,  // canonical: Mt
       growth:     num('f-growth',    3),
       inflation:  num('f-inflation', 2),
       scenario:   document.getElementById('f-scenario').value
@@ -1843,14 +1949,15 @@
 
   // ─── First-time calculation: copies values from screen-1 form to screen-3 form, then renders ───
   function calculate() {
-    // Copy each field from f1-* to f-*
-    ['name', 'margin', 'opex', 'emissions', 'growth', 'inflation', 'scenario'].forEach(field => {
+    // Copy each field from f1-* to f-* (values + unit selectors)
+    ['name', 'margin', 'opex', 'emissions', 'growth', 'inflation', 'scenario',
+     'opex-unit', 'emissions-unit'].forEach(field => {
       const src = document.getElementById('f1-' + field);
       const dst = document.getElementById('f-' + field);
       if (src && dst) dst.value = src.value;
     });
-    // Refresh the opex caption since the value changed
-    updateOpexCaption('f-opex', 'opex-caption');
+    // Refresh the opex caption since the value (and possibly unit) changed
+    updateOpexCaption('f-opex', 'opex-caption', 'f-opex-unit');
     _firstChartRender = true;  // play entrance animation on this fresh render
     render();
     goto(3);
@@ -1866,6 +1973,11 @@
   ['f-name', 'f-margin', 'f-opex', 'f-emissions', 'f-growth', 'f-inflation'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', () => scheduleRender(120));
+  });
+  // Unit pickers are dropdowns — fire on change, not input. Re-render instantly.
+  ['f-opex-unit', 'f-emissions-unit'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => render());
   });
   document.getElementById('f-scenario').addEventListener('change', () => render()); // dropdown: instant
 
@@ -2077,15 +2189,13 @@
         </style>`;
       }
 
-      // Value labels above bars — 2030 (midpoint) and 2040 (endpoint).
-      // 2025 stays unlabeled as the baseline reference.
-      if (i >= 1) {
-        const isLast = i === series.without.length - 1;
-        const fontSize = isLast ? 11 : 10;
-        const sLbl = anim ? `opacity:0; animation: lblFade 0.3s ${delayBase + 0.5}s forwards;` : '';
-        g += `<text x="${xC + barW/2}" y="${yC - 6}" text-anchor="middle" font-size="${fontSize}" font-weight="600" fill="#c0392b" font-family="Inter" style="${sLbl}">${fmtMoney(dC.val)}</text>`;
-        g += `<text x="${xW + barW/2}" y="${yW - 6}" text-anchor="middle" font-size="${fontSize}" font-weight="600" fill="#122c27" font-family="Inter" opacity="0.7" style="${sLbl}">${fmtMoney(dW.val)}</text>`;
-      }
+      // Value labels above bars at every year (2025, 2030, 2040).
+      // 2040 gets larger font as the primary punch; 2025 and 2030 are smaller.
+      const isLast = i === series.without.length - 1;
+      const fontSize = isLast ? 11 : 10;
+      const sLbl = anim ? `opacity:0; animation: lblFade 0.3s ${delayBase + 0.5}s forwards;` : '';
+      g += `<text x="${xC + barW/2}" y="${yC - 6}" text-anchor="middle" font-size="${fontSize}" font-weight="600" fill="#c0392b" font-family="Inter" style="${sLbl}">${fmtMoney(dC.val)}</text>`;
+      g += `<text x="${xW + barW/2}" y="${yW - 6}" text-anchor="middle" font-size="${fontSize}" font-weight="600" fill="#122c27" font-family="Inter" opacity="0.7" style="${sLbl}">${fmtMoney(dW.val)}</text>`;
     });
     if (anim) {
       g += `<style>@keyframes lblFade { to { opacity: 1; } }</style>`;
